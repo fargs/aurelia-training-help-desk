@@ -21,5 +21,7 @@ export function configure(aurelia) {
     aurelia.use.plugin('aurelia-testing');
   }
 
-  aurelia.start().then(() => aurelia.setRoot());
+  aurelia.start().then(() => aurelia.setRoot('login/login'));
+  // save the session to a cookie if the user isAuthenticated after a refresh, you can setRoot to the shell.
+  // similar to the login successful login/login
 }

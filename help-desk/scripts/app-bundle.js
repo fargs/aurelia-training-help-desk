@@ -62,7 +62,7 @@ define('main',['exports', './environment'], function (exports, _environment) {
     }
 
     aurelia.start().then(function () {
-      return aurelia.setRoot();
+      return aurelia.setRoot('login/login');
     });
   }
 });
@@ -457,5 +457,153 @@ define('backend/server',['exports', './lorem'], function (exports, _lorem) {
     return Server;
   }();
 });
+define('login/login',['exports', 'aurelia-dependency-injection', 'aurelia-framework', 'backend/server'], function (exports, _aureliaDependencyInjection, _aureliaFramework, _server) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Login = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var Login = exports.Login = (_dec = (0, _aureliaDependencyInjection.inject)(_aureliaFramework.Aurelia, _server.Server), _dec(_class = function () {
+    function Login(aurelia, server) {
+      _classCallCheck(this, Login);
+
+      this.aurelia = aurelia;
+      this.server = server;
+      this.username = '';
+      this.password = '';
+      this.message = '';
+    }
+
+    Login.prototype.login = function login() {
+      var _this = this;
+
+      this.server.login(this.username, this.password).then(function (result) {
+        if (result) {
+          _this.message = '';
+
+          _this.aurelia.use.instance(_server.User, result);
+          _this.aurelia.setRoot('shell/shell');
+        } else {
+          _this.message = 'Incorrect Username or Password!';
+        }
+      });
+    };
+
+    return Login;
+  }()) || _class);
+});
+define('shell/routes',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = [{
+    name: 'home',
+    route: ['', 'home'],
+    moduleId: 'home/home',
+    nav: true,
+    title: 'Home',
+    settings: { iconClass: 'fa-home' }
+  }, {
+    route: 'tickets',
+    moduleId: 'tickets/tickets',
+    nav: true,
+    settings: { iconClass: 'fa-ticket' }
+  }, {
+    name: 'thread',
+    route: 'tickets/:id',
+    moduleId: 'tickets/thread'
+  }, {
+    name: 'user',
+    route: ['users', 'users/:id'],
+    moduleId: 'users/users',
+    href: '#users',
+    nav: true,
+    title: 'Users',
+    settings: { iconClass: 'fa-group' }
+  }, {
+    name: 'settings',
+    route: 'settings',
+    moduleId: 'settings/index',
+    href: '#settings',
+    nav: true,
+    settings: { iconClass: 'fa-cog' }
+  }, {
+    name: 'help',
+    route: 'help',
+    moduleId: 'help/help'
+  }];
+});
+define('shell/shell',['exports', 'aurelia-framework', 'backend/server', './routes'], function (exports, _aureliaFramework, _server, _routes) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Shell = undefined;
+
+  var _routes2 = _interopRequireDefault(_routes);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var Shell = exports.Shell = (_dec = (0, _aureliaFramework.inject)(_server.User), _dec(_class = function () {
+    function Shell(user) {
+      _classCallCheck(this, Shell);
+
+      this.user = user;
+    }
+
+    Shell.prototype.configureRouter = function configureRouter(config, router) {
+      this.router = router;
+      config.map(_routes2.default);
+    };
+
+    return Shell;
+  }()) || _class);
+});
+define('home/home',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Home = exports.Home = function Home() {
+    _classCallCheck(this, Home);
+  };
+});
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <h1>${message}</h1>\n</template>\n"; });
+define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"login\">\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 logo\"></div>\n    </div>\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 well\">\n        <div class=\"alert alert-danger\" show.bind=\"message\">${message}</div>\n\n        <form role=\"form\" class=\"form-horizontal\" submit.trigger=\"login()\"><!--Invoke login on form submit.-->\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Username</label>\n            <div class=\"col-sm-10\">\n              <input type=\"text\" class=\"form-control\" placeholder=\"username\" value.bind=\"username\"><!--Bind the username.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Password</label>\n            <div class=\"col-sm-10\">\n              <input type=\"password\" class=\"form-control\" placeholder=\"password\" value.bind=\"password\"><!--Bind the password.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <div class=\"col-sm-offset-2 col-sm-10 text-right\">\n              <!--Disable the button if there isn't both a username and password.-->\n              <button type=\"submit\" class=\"btn btn-success\" disabled.bind=\"!username || !password\">Log In</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</template>\n"; });
+define('text!login/login.1.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"login\">\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 logo\"></div>\n    </div>\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 well\">\n        <div class=\"alert alert-danger\"><!--Display the message property here, only if present.--></div>\n\n        <form role=\"form\" class=\"form-horizontal\"><!--Invoke login on form submit.-->\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Username</label>\n            <div class=\"col-sm-10\">\n              <input type=\"text\" class=\"form-control\" placeholder=\"username\"><!--Bind the username.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Password</label>\n            <div class=\"col-sm-10\">\n              <input type=\"password\" class=\"form-control\" placeholder=\"password\"><!--Bind the password.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <div class=\"col-sm-offset-2 col-sm-10 text-right\">\n              <!--Disable the button if there isn't both a username and password.-->\n              <button type=\"submit\" class=\"btn btn-success\">Log In</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</template>\n"; });
+define('text!shell/shell.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"page-host\">\n    <router-view></router-view>\n  </div>\n</template>\n"; });
+define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n  Home Screen Placeholder\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map
