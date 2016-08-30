@@ -7,7 +7,7 @@ export default [
     title: 'Home', 
     settings: { iconClass: 'fa-home' } 
   },
-  { 
+  {
     route: 'tickets', 
     moduleId: 'tickets/tickets', 
     nav: true, 
