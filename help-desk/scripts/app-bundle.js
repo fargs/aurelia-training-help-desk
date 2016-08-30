@@ -531,14 +531,16 @@ define('home/home',['exports', 'aurelia-framework', 'backend/server'], function 
     return Home;
   }()) || _class);
 });
-define('resources/index',["exports"], function (exports) {
-  "use strict";
+define('resources/index',['exports'], function (exports) {
+  'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   exports.configure = configure;
-  function configure(config) {}
+  function configure(config) {
+    config.globalResources(['./value-converters/activity-type-to-route']);
+  }
 });
 define('shell/routes',['exports'], function (exports) {
   'use strict';
@@ -622,12 +624,80 @@ define('shell/shell',['exports', 'aurelia-framework', 'backend/server', './route
     return Shell;
   }()) || _class);
 });
+define('resources/value-converters/h/home',['exports', 'aurelia-framework', 'backend/server'], function (exports, _aureliaFramework, _server) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Home = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_server.Server), _dec(_class = function () {
+    function Home(server) {
+      _classCallCheck(this, Home);
+
+      this.server = server;
+      this.activity = null;
+      this.news = null;
+    }
+
+    Home.prototype.activate = function activate() {
+      var _this = this;
+
+      return Promise.all([this.server.getRecentActivity().then(function (activity) {
+        return _this.activity = activity;
+      }), this.server.getNews().then(function (news) {
+        return _this.news = news;
+      })]);
+    };
+
+    return Home;
+  }()) || _class);
+});
+define('resources/value-converters/activity-type-to-route',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var ActivityTypeToRouteValueConverter = exports.ActivityTypeToRouteValueConverter = function () {
+    function ActivityTypeToRouteValueConverter() {
+      _classCallCheck(this, ActivityTypeToRouteValueConverter);
+    }
+
+    ActivityTypeToRouteValueConverter.prototype.toView = function toView(value) {
+      switch (value) {
+        case 'ticket':
+          return 'thread';
+        default:
+          throw new Error('Unknown ticket type: ' + value + '.');
+      }
+    };
+
+    return ActivityTypeToRouteValueConverter;
+  }();
+});
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <h1>${message}</h1>\n</template>\n"; });
 define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./activity-list.html\"></require>\n  \n  <div>\n    <div class=\"header\">\n      <div class=\"header-left\">Activity</div>\n      <div class=\"header-right\">Benchmarks &amp; News</div>\n    </div>\n\n    <div class=\"sidebar\">\n      <activity-list activity.bind=\"activity\"></activity-list>\n    </div>\n\n    <div class=\"detail-container\">\n      <div class=\"row1x2\">\n        <!--TODO: Add Charts Here-->\n      </div>\n      <div class=\"row2x2\">\n        <!--TODO: Add News List Here-->\n      </div>\n    </div>\n  </div>\n</template>"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"login\">\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 logo\"></div>\n    </div>\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 well\">\n        <div class=\"alert alert-danger\" show.bind=\"message\">${message}</div>\n\n        <form role=\"form\" class=\"form-horizontal\" submit.trigger=\"login()\"><!--Invoke login on form submit.-->\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Username</label>\n            <div class=\"col-sm-10\">\n              <input type=\"text\" class=\"form-control\" placeholder=\"username\" value.bind=\"username\"><!--Bind the username.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Password</label>\n            <div class=\"col-sm-10\">\n              <input type=\"password\" class=\"form-control\" placeholder=\"password\" value.bind=\"password\"><!--Bind the password.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <div class=\"col-sm-offset-2 col-sm-10 text-right\">\n              <!--Disable the button if there isn't both a username and password.-->\n              <button type=\"submit\" class=\"btn btn-success\" disabled.bind=\"!username || !password\">Log In</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</template>\n"; });
 define('text!shell/header.html', ['module'], function(module) { module.exports = "<template>\n  <nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n    <ul class=\"nav navbar-nav tabs\">\n      <!--TODO: Add Tabs UI-->\n      <li class=\"dropdown add\">\n        <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n          <i class=\"fa fa-plus\"></i>add\n        </a>\n        <ul class=\"dropdown-menu\">\n          <li>\n            <a route-href=\"route: thread; params.bind: { id:'new' }\"><i class=\"icon-ticket\"></i> New Ticket</a>\n          </li>\n          <li>\n            <a route-href=\"route: user; params.bind: { id:'new' }\"><i class=\"icon-group\"></i> New User</a>\n          </li>\n        </ul>\n      </li>\n    </ul>\n\n    <ul class=\"nav navbar-nav navbar-right\">\n      <li class=\"dropdown\">\n        <a href=\"#\" class=\"avatar dropdown-toggle\" data-toggle=\"dropdown\">\n          <img src=\"${user.iconUrl}\" title.bind=\"user.username\">\n          <b class=\"caret\"></b>\n        </a>\n        <ul class=\"dropdown-menu\" role=\"menu\">\n          <li role=\"presentation\">\n            <a route-href=\"route: settings\"><i class=\"fa fa-cog\"></i> Settings</a>\n          </li>\n          <li role=\"presentation\">\n            <a route-href=\"route: help\"><i class=\"fa fa-envelope\"></i> Help</a>\n          </li>\n          <li role=\"presentation\" class=\"divider\"></li>\n          <li role=\"presentation\">\n            <a href=\"#\" click.trigger=\"logout()\"><i class=\"fa fa-power-off\"></i> Logout</a>\n          </li>\n        </ul>\n      </li>\n    </ul>\n  </nav>\n</template>"; });
 define('text!shell/shell.html', ['module'], function(module) { module.exports = "<template>\n  <compose view=\"./header.html\"></compose>\n  <compose view=\"./sidebar.html\"></compose>\n  <div class=\"page-host\">\n    <router-view></router-view>\n  </div>\n</template>\n"; });
 define('text!shell/sidebar.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"main-nav\">\n    <ul class=\"nav nav-list\">\n      <li repeat.for=\"item of router.navigation\" class=\"${item.isActive ? 'active' : ''}\" > <!--One li per item in router.navigation; apply the active class if items.isActive-->\n        <a href.bind=\"item.href\"> <!--Bind the href to item.href-->\n          <i class=\"fa ${item.settings.iconClass}\"></i> <!--Add the icon class based on settings.-->\n        </a>\n      </li>\n    </ul>\n  </div>\n</template>\n"; });
-define('text!home/activity-list.html', ['module'], function(module) { module.exports = "<template bindable=\"activity\">\n  <ul>\n    <li repeat.for=\"a of activity\" class=\"activity\">\n      <!--Note: The activity type isn't the same as the route. What do we do?-->\n      <a route-href=\"route.bind: a.type; params.bind: { id: a.associatedId }\">\n        <div class=\"well\">\n          <div class=\"avatar\">\n            <img src=\"${a.createdBy.iconUrl}\">\n          </div>\n          <div class=\"body\">\n            <div class=\"title\" innerhtml.bind=\"a.title\"></div> <!-- a.title is formatted as html already so you can bind to innerHtml. This should be santized on the server or in a value converter. --> \n            <div class=\"content\">${a.content}</div>\n            <div class=\"date\">${a.createdAt}</div> <!--TODO: Add nicer date format. -->\n          </div>\n        </div>\n      </a>\n    </li>\n  </ul>\n</template>"; });
+define('text!home/activity-list.html', ['module'], function(module) { module.exports = "<template bindable=\"activity\">\n  <ul>\n    <li repeat.for=\"a of activity\" class=\"activity\">\n      <!--Note: The activity type isn't the same as the route. What do we do?-->\n      <a route-href=\"route.bind: a.type | activityTypeToRoute; params.bind: { id: a.associatedId }\">\n        <div class=\"well\">\n          <div class=\"avatar\">\n            <img src=\"${a.createdBy.iconUrl}\">\n          </div>\n          <div class=\"body\">\n            <div class=\"title\" innerhtml.bind=\"a.title\"></div> <!-- a.title is formatted as html already so you can bind to innerHtml. This should be santized on the server or in a value converter. --> \n            <div class=\"content\">${a.content}</div>\n            <div class=\"date\">${a.createdAt}</div> <!--TODO: Add nicer date format. -->\n          </div>\n        </div>\n      </a>\n    </li>\n  </ul>\n</template>"; });
 define('text!home/home.1.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./activity-list.html\"></require>\n  \n  <div>\n    <div class=\"header\">\n      <div class=\"header-left\">Activity</div>\n      <div class=\"header-right\">Benchmarks &amp; News</div>\n    </div>\n\n    <div class=\"sidebar\">\n      <activity-list activity.bind=\"activity\"></activity-list>\n    </div>\n\n    <div class=\"detail-container\">\n      <div class=\"row1x2\">\n        <!--TODO: Add Charts Here-->\n      </div>\n      <div class=\"row2x2\">\n        <!--TODO: Add News List Here-->\n      </div>\n    </div>\n  </div>\n</template>"; });
 //# sourceMappingURL=app-bundle.js.map
