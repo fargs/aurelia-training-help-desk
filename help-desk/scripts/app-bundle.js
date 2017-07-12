@@ -51,7 +51,7 @@ define('main',['exports', './environment'], function (exports, _environment) {
   });
 
   function configure(aurelia) {
-    aurelia.use.standardConfiguration().plugin('aurelia-dialog').feature('resources');
+    aurelia.use.standardConfiguration().plugin('aurelia-dialog').plugin('aurelia-validation').feature('resources');
 
     if (_environment2.default.debug) {
       aurelia.use.developmentLogging();
@@ -448,6 +448,44 @@ define('backend/server',['exports', './lorem'], function (exports, _lorem) {
     return Server;
   }();
 });
+define('home/home',['exports', 'aurelia-framework', 'backend/server'], function (exports, _aureliaFramework, _server) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Home = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_server.Server), _dec(_class = function () {
+    function Home(server) {
+      _classCallCheck(this, Home);
+
+      this.server = server;
+      this.activity = null;
+      this.news = null;
+    }
+
+    Home.prototype.activate = function activate() {
+      var _this = this;
+
+      return Promise.all([this.server.getRecentActivity().then(function (activity) {
+        return _this.activity = activity;
+      }), this.server.getNews().then(function (news) {
+        return _this.news = news;
+      })]);
+    };
+
+    return Home;
+  }()) || _class);
+});
 define('login/login',['exports', 'aurelia-dependency-injection', 'aurelia-framework', 'backend/server'], function (exports, _aureliaDependencyInjection, _aureliaFramework, _server) {
   'use strict';
 
@@ -493,16 +531,245 @@ define('login/login',['exports', 'aurelia-dependency-injection', 'aurelia-framew
     return Login;
   }()) || _class);
 });
-define('resources/index',['exports'], function (exports) {
+define('resources/bootstrap-form-renderer',['exports', 'aurelia-validation'], function (exports, _aureliaValidation) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.BootstrapFormRenderer = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var BootstrapFormRenderer = exports.BootstrapFormRenderer = function () {
+    function BootstrapFormRenderer() {
+      _classCallCheck(this, BootstrapFormRenderer);
+    }
+
+    BootstrapFormRenderer.prototype.render = function render(instruction) {
+      for (var _iterator = instruction.unrender, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var _ref3 = _ref;
+        var error = _ref3.error;
+        var elements = _ref3.elements;
+
+        for (var _iterator3 = elements, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+          var _ref4;
+
+          if (_isArray3) {
+            if (_i3 >= _iterator3.length) break;
+            _ref4 = _iterator3[_i3++];
+          } else {
+            _i3 = _iterator3.next();
+            if (_i3.done) break;
+            _ref4 = _i3.value;
+          }
+
+          var element = _ref4;
+
+          this.remove(element, error);
+        }
+      }
+
+      for (var _iterator2 = instruction.render, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+        var _ref2;
+
+        if (_isArray2) {
+          if (_i2 >= _iterator2.length) break;
+          _ref2 = _iterator2[_i2++];
+        } else {
+          _i2 = _iterator2.next();
+          if (_i2.done) break;
+          _ref2 = _i2.value;
+        }
+
+        var _ref5 = _ref2;
+        var error = _ref5.error;
+        var elements = _ref5.elements;
+
+        for (var _iterator4 = elements, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+          var _ref6;
+
+          if (_isArray4) {
+            if (_i4 >= _iterator4.length) break;
+            _ref6 = _iterator4[_i4++];
+          } else {
+            _i4 = _iterator4.next();
+            if (_i4.done) break;
+            _ref6 = _i4.value;
+          }
+
+          var _element = _ref6;
+
+          this.add(_element, error);
+        }
+      }
+    };
+
+    BootstrapFormRenderer.prototype.add = function add(element, error) {
+      var formGroup = element.closest('.form-group');
+      if (!formGroup) {
+        return;
+      }
+
+      formGroup.classList.add('has-error');
+
+      var message = document.createElement('span');
+      message.className = 'help-block validation-message';
+      message.textContent = error.message;
+      message.id = 'validation-message-' + error.id;
+      formGroup.appendChild(message);
+    };
+
+    BootstrapFormRenderer.prototype.remove = function remove(element, error) {
+      var formGroup = element.closest('.form-group');
+      if (!formGroup) {
+        return;
+      }
+
+      var message = formGroup.querySelector('#validation-message-' + error.id);
+      if (message) {
+        formGroup.removeChild(message);
+
+        if (formGroup.querySelectorAll('.help-block.validation-message').length === 0) {
+          formGroup.classList.remove('has-error');
+        }
+      }
+    };
+
+    return BootstrapFormRenderer;
+  }();
+});
+define('resources/index',['exports', 'chartjs'], function (exports, _chartjs) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   exports.configure = configure;
-  function configure(config) {
-    config.globalResources(['./value-converters/activity-type-to-route', './value-converters/date']);
+
+  var _chartjs2 = _interopRequireDefault(_chartjs);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
   }
+
+  _chartjs2.default.defaults.global.responsive = true;
+
+  function configure(config) {
+    config.globalResources(['./value-converters/activity-type-to-route', './value-converters/date', './elements/rich-text-editor', './elements/data-grid', './elements/chart-data', './elements/line-chart', './elements/bar-chart']);
+  }
+});
+define('settings/index',['exports', './routes'], function (exports, _routes2) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.CategoriesValueConverter = exports.SettingsIndex = undefined;
+
+  var _routes3 = _interopRequireDefault(_routes2);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var SettingsIndex = exports.SettingsIndex = function () {
+    function SettingsIndex() {
+      _classCallCheck(this, SettingsIndex);
+    }
+
+    SettingsIndex.prototype.configureRouter = function configureRouter(config, router) {
+      this.router = router;
+      config.map(_routes3.default);
+    };
+
+    return SettingsIndex;
+  }();
+
+  var CategoriesValueConverter = exports.CategoriesValueConverter = function () {
+    function CategoriesValueConverter() {
+      _classCallCheck(this, CategoriesValueConverter);
+    }
+
+    CategoriesValueConverter.prototype.toView = function toView(navModels) {
+      var categories = new Map();
+
+      for (var _iterator = navModels, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+        var _ref;
+
+        if (_isArray) {
+          if (_i >= _iterator.length) break;
+          _ref = _iterator[_i++];
+        } else {
+          _i = _iterator.next();
+          if (_i.done) break;
+          _ref = _i.value;
+        }
+
+        var model = _ref;
+
+        var _routes = categories.get(model.settings.category);
+
+        if (!_routes) {
+          categories.set(model.settings.category, _routes = []);
+        }
+
+        _routes.push(model);
+      }
+
+      return categories;
+    };
+
+    return CategoriesValueConverter;
+  }();
+});
+define('settings/routes',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var adminHome = {
+    title: 'Admin Home',
+    iconClass: 'fa-home'
+  };
+
+  var channels = {
+    title: 'Channels',
+    iconClass: 'fa-external-link'
+  };
+
+  var settings = {
+    title: 'Settings',
+    iconClass: 'fa-cog'
+  };
+
+  exports.default = [{ route: '', moduleId: './overview/index', title: 'Overview', nav: true, settings: { category: adminHome } }, { route: 'email', moduleId: './email/index', title: 'Email', nav: true, settings: { category: channels } }, { route: 'web-portal', moduleId: './webportal/index', title: 'Web Portal', nav: true, settings: { category: channels } }, { route: 'twitter', moduleId: './twitter/index', title: 'Twitter', nav: true, settings: { category: channels } }, { route: 'facebook', moduleId: './facebook/index', title: 'Facebook', nav: true, settings: { category: channels } }, { route: 'feedback-tab', moduleId: './feedbacktab/index', title: 'Feedback Tab', nav: true, settings: { category: channels } }, { route: 'api', moduleId: './api/index', title: 'API', nav: true, settings: { category: channels } }, { route: 'account', moduleId: './account/index', title: 'Account', nav: true, settings: { category: settings } }, { route: 'subscription', moduleId: './subscription/index', title: 'Subscription', nav: true, settings: { category: channels } }, { route: 'security', moduleId: './security/index', title: 'Security', nav: true, settings: { category: settings } }];
 });
 define('shell/routes',['exports'], function (exports) {
   'use strict';
@@ -786,13 +1053,13 @@ define('tickets/thread',['exports', 'aurelia-framework', 'aurelia-event-aggregat
     return Thread;
   }()) || _class);
 });
-define('home/home',['exports', 'aurelia-framework', 'backend/server'], function (exports, _aureliaFramework, _server) {
+define('tickets/tickets',['exports', 'backend/server', 'aurelia-framework'], function (exports, _server, _aureliaFramework) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.Home = undefined;
+  exports.Tickets = undefined;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -802,26 +1069,332 @@ define('home/home',['exports', 'aurelia-framework', 'backend/server'], function 
 
   var _dec, _class;
 
-  var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_server.Server), _dec(_class = function () {
-    function Home(server) {
-      _classCallCheck(this, Home);
+  var Tickets = exports.Tickets = (_dec = (0, _aureliaFramework.inject)(_server.Server), _dec(_class = function () {
+    function Tickets(server) {
+      _classCallCheck(this, Tickets);
 
       this.server = server;
-      this.activity = null;
-      this.news = null;
     }
 
-    Home.prototype.activate = function activate() {
+    Tickets.prototype.activate = function activate() {
       var _this = this;
 
-      return Promise.all([this.server.getRecentActivity().then(function (activity) {
-        return _this.activity = activity;
-      }), this.server.getNews().then(function (news) {
-        return _this.news = news;
-      })]);
+      return this.server.getTicketSummaries().then(function (tickets) {
+        return _this.tickets = tickets;
+      });
     };
 
-    return Home;
+    return Tickets;
+  }()) || _class);
+});
+define('users/edit-user-controller',['exports', 'aurelia-framework', 'aurelia-validation', 'resources/bootstrap-form-renderer', 'backend/server'], function (exports, _aureliaFramework, _aureliaValidation, _bootstrapFormRenderer, _server) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.EditUserController = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
+    var desc = {};
+    Object['ke' + 'ys'](descriptor).forEach(function (key) {
+      desc[key] = descriptor[key];
+    });
+    desc.enumerable = !!desc.enumerable;
+    desc.configurable = !!desc.configurable;
+
+    if ('value' in desc || desc.initializer) {
+      desc.writable = true;
+    }
+
+    desc = decorators.slice().reverse().reduce(function (desc, decorator) {
+      return decorator(target, property, desc) || desc;
+    }, desc);
+
+    if (context && desc.initializer !== void 0) {
+      desc.value = desc.initializer ? desc.initializer.call(context) : void 0;
+      desc.initializer = undefined;
+    }
+
+    if (desc.initializer === void 0) {
+      Object['define' + 'Property'](target, property, desc);
+      desc = null;
+    }
+
+    return desc;
+  }
+
+  var _dec, _dec2, _dec3, _class, _desc, _value, _class2;
+
+  var EditUserController = exports.EditUserController = (_dec = (0, _aureliaFramework.transient)(), _dec2 = (0, _aureliaFramework.inject)(_server.Server, _aureliaFramework.NewInstance.of(_aureliaValidation.ValidationController)), _dec3 = (0, _aureliaFramework.computedFrom)('validationController.errors.length'), _dec(_class = _dec2(_class = (_class2 = function () {
+    function EditUserController(server, validationController) {
+      _classCallCheck(this, EditUserController);
+
+      this.server = server;
+      this.validationController = validationController;
+      this.validationController.validateTrigger = _aureliaValidation.validateTrigger.change;
+      this.validationController.addRenderer(new _bootstrapFormRenderer.BootstrapFormRenderer());
+      this.onSave = function () {};
+    }
+
+    EditUserController.prototype.startTracking = function startTracking(original) {
+      var _this = this;
+
+      if (original) {
+        this.stopTracking();
+        this.original = original;
+        this.originalJSON = JSON.stringify(original);
+        this.isDirty = false;
+        this.editable = original.clone();
+
+        _aureliaValidation.ValidationRules.ensure('firstName').displayName('First Name').required().minLength(3).maxLength(10).ensure('lastName').displayName('Last Name').required().minLength(3).maxLength(10).ensure('email').displayName('Email').required().email().on(this.editable);
+
+        this.validationController.reset();
+
+        this._timer = setInterval(function () {
+          var currentJSON = JSON.stringify(_this.editable);
+          if (currentJSON !== _this.originalJSON) {
+            _this.isDirty = true;
+          } else if (_this.isDirty) {
+            _this.isDirty = false;
+          }
+        }, 500);
+      } else {
+        this.original = this.editable = null;
+      }
+    };
+
+    EditUserController.prototype.stopTracking = function stopTracking() {
+      clearInterval(this._timer);
+    };
+
+    EditUserController.prototype.validate = function validate() {
+      return this.validationController.validate();
+    };
+
+    EditUserController.prototype.toggleActiveStatus = function toggleActiveStatus() {
+      this.editable.isActive = !this.editable.isActive;
+    };
+
+    EditUserController.prototype.commit = function commit(other) {
+      this.stopTracking();
+      Object.assign(this.original, other || this.editable);
+      this.startTracking(this.original);
+    };
+
+    EditUserController.prototype.revert = function revert() {
+      this.startTracking(this.original);
+    };
+
+    EditUserController.prototype.save = function save() {
+      var _this2 = this;
+
+      return this.validate().then(function (errors) {
+        if (errors.length !== 0) {
+          return;
+        }
+
+        return _this2.server.saveUser(_this2.editable).then(function (user) {
+          _this2.commit(user);
+          _this2.onSave(user);
+        });
+      });
+    };
+
+    _createClass(EditUserController, [{
+      key: 'isValid',
+      get: function get() {
+        return this.validationController.errors.length === 0;
+      }
+    }]);
+
+    return EditUserController;
+  }(), (_applyDecoratedDescriptor(_class2.prototype, 'isValid', [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, 'isValid'), _class2.prototype)), _class2)) || _class) || _class);
+});
+define('users/users',['exports', 'aurelia-framework', 'aurelia-router', 'backend/server', 'resources/dialogs/common-dialogs', './edit-user-controller'], function (exports, _aureliaFramework, _aureliaRouter, _server, _commonDialogs, _editUserController) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Users = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _class;
+
+  var Users = exports.Users = (_dec = (0, _aureliaFramework.inject)(_server.Server, _aureliaRouter.Router, _commonDialogs.CommonDialogs, _editUserController.EditUserController), _dec2 = (0, _aureliaFramework.singleton)(), _dec(_class = _dec2(_class = function () {
+    function Users(server, router, commonDialogs, controller) {
+      var _this = this;
+
+      _classCallCheck(this, Users);
+
+      this.server = server;
+      this.router = router;
+      this.commonDialogs = commonDialogs;
+      this.controller = controller;
+      this.controller.onSave = function (user) {
+        return _this.onSave(user);
+      };
+    }
+
+    Users.prototype.canActivate = function canActivate(params) {
+      if (!params.id && this.activeId) {
+        return new _aureliaRouter.RedirectToRoute('user', { id: this.activeId });
+      }
+
+      return true;
+    };
+
+    Users.prototype.activate = function activate(params) {
+      var _this2 = this;
+
+      if (!this.users) {
+        return Promise.all([this.load(params.id), this.server.getUserSummaries().then(function (users) {
+          return _this2.users = users;
+        })]);
+      } else {
+        return this.load(params.id);
+      }
+    };
+
+    Users.prototype.load = function load(id) {
+      var _this3 = this;
+
+      if (id == 'new') {
+        this.activeId = 0;
+        this.controller.startTracking(this.server.createUser());
+      } else if (id) {
+        this.activeId = parseInt(id);
+        return this.server.getUser(this.activeId).then(function (user) {
+          _this3.controller.startTracking(user);
+        });
+      } else {
+        this.activeId = 0;
+        this.controller.startTracking(null);
+      }
+    };
+
+    Users.prototype.onSave = function onSave(user) {
+      if (this.activeId == 0) {
+        this.users.unshift(user);
+        this.activeId = user.id;
+        this.router.navigateToRoute('user', { id: user.id }, { replace: true, trigger: false });
+      } else {
+        var existing = this.users.find(function (c) {
+          return c.id == user.id;
+        });
+        var index = this.users.indexOf(existing);
+        this.users.splice(index, 1, user);
+      }
+    };
+
+    Users.prototype.canDeactivate = function canDeactivate() {
+      if (this.controller.isDirty) {
+        var message = 'You have made changes. If you leave now, these changes will be lost. Do you wish to continue?';
+
+        return this.commonDialogs.showMessage(message, 'User Has Changed', ['Yes', 'No']).then(function (response) {
+          return !response.wasCancelled;
+        });
+      }
+
+      return true;
+    };
+
+    Users.prototype.deactivate = function deactivate() {
+      this.controller.revert();
+      this.controller.stopTracking();
+    };
+
+    return Users;
+  }()) || _class) || _class);
+});
+define('resources/data/countries',["exports", "aurelia-templating"], function (exports, _aureliaTemplating) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.CountryBinder = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var countries = [{ abbreviation: "AF", name: "Afghanistan" }, { abbreviation: "AL", name: "Albania" }, { abbreviation: "DZ", name: "Algeria" }, { abbreviation: "AS", name: "American Samoa" }, { abbreviation: "AD", name: "Andorra" }, { abbreviation: "AO", name: "Angola" }, { abbreviation: "AI", name: "Anguilla" }, { abbreviation: "AQ", name: "Antarctica" }, { abbreviation: "AG", name: "Antigua and Barbuda" }, { abbreviation: "AR", name: "Argentina" }, { abbreviation: "AM", name: "Armenia" }, { abbreviation: "AW", name: "Aruba" }, { abbreviation: "AU", name: "Australia" }, { abbreviation: "AT", name: "Austria" }, { abbreviation: "AZ", name: "Azerbaijan" }, { abbreviation: "BS", name: "Bahamas" }, { abbreviation: "BH", name: "Bahrain" }, { abbreviation: "BD", name: "Bangladesh" }, { abbreviation: "BB", name: "Barbados" }, { abbreviation: "BY", name: "Belarus" }, { abbreviation: "BE", name: "Belgium" }, { abbreviation: "BZ", name: "Belize" }, { abbreviation: "BJ", name: "Benin" }, { abbreviation: "BM", name: "Bermuda" }, { abbreviation: "BT", name: "Bhutan" }, { abbreviation: "BO", name: "Bolivia" }, { abbreviation: "BA", name: "Bosnia and Herzegowina" }, { abbreviation: "BW", name: "Botswana" }, { abbreviation: "BV", name: "Bouvet Island" }, { abbreviation: "BR", name: "Brazil" }, { abbreviation: "IO", name: "British Indian Ocean Territory" }, { abbreviation: "BN", name: "Brunei Darussalam" }, { abbreviation: "BG", name: "Bulgaria" }, { abbreviation: "BF", name: "Burkina Faso" }, { abbreviation: "BI", name: "Burundi" }, { abbreviation: "KH", name: "Cambodia" }, { abbreviation: "CM", name: "Cameroon" }, { abbreviation: "CA", name: "Canada" }, { abbreviation: "CV", name: "Cape Verde" }, { abbreviation: "KY", name: "Cayman Islands" }, { abbreviation: "CF", name: "Central African Republic" }, { abbreviation: "TD", name: "Chad" }, { abbreviation: "CL", name: "Chile" }, { abbreviation: "CN", name: "China" }, { abbreviation: "CX", name: "Christmas Island" }, { abbreviation: "CC", name: "Cocos (Keeling) Islands" }, { abbreviation: "CO", name: "Colombia" }, { abbreviation: "KM", name: "Comoros" }, { abbreviation: "CG", name: "Congo" }, { abbreviation: "CD", name: "Congo, the Democratic Republic of the" }, { abbreviation: "CK", name: "Cook Islands" }, { abbreviation: "CR", name: "Costa Rica" }, { abbreviation: "CI", name: "Cote d'Ivoire" }, { abbreviation: "HR", name: "Croatia (Hrvatska)" }, { abbreviation: "CU", name: "Cuba" }, { abbreviation: "CY", name: "Cyprus" }, { abbreviation: "CZ", name: "Czech Republic" }, { abbreviation: "DK", name: "Denmark" }, { abbreviation: "DJ", name: "Djibouti" }, { abbreviation: "DM", name: "Dominica" }, { abbreviation: "DO", name: "Dominican Republic" }, { abbreviation: "TP", name: "East Timor" }, { abbreviation: "EC", name: "Ecuador" }, { abbreviation: "EG", name: "Egypt" }, { abbreviation: "SV", name: "El Salvador" }, { abbreviation: "GQ", name: "Equatorial Guinea" }, { abbreviation: "ER", name: "Eritrea" }, { abbreviation: "EE", name: "Estonia" }, { abbreviation: "ET", name: "Ethiopia" }, { abbreviation: "FK", name: "Falkland Islands (Malvinas)" }, { abbreviation: "FO", name: "Faroe Islands" }, { abbreviation: "FJ", name: "Fiji" }, { abbreviation: "FI", name: "Finland" }, { abbreviation: "FR", name: "France" }, { abbreviation: "FX", name: "France, Metropolitan" }, { abbreviation: "GF", name: "French Guiana" }, { abbreviation: "PF", name: "French Polynesia" }, { abbreviation: "TF", name: "French Southern Territories" }, { abbreviation: "GA", name: "Gabon" }, { abbreviation: "GM", name: "Gambia" }, { abbreviation: "GE", name: "Georgia" }, { abbreviation: "DE", name: "Germany" }, { abbreviation: "GH", name: "Ghana" }, { abbreviation: "GI", name: "Gibraltar" }, { abbreviation: "GR", name: "Greece" }, { abbreviation: "GL", name: "Greenland" }, { abbreviation: "GD", name: "Grenada" }, { abbreviation: "GP", name: "Guadeloupe" }, { abbreviation: "GU", name: "Guam" }, { abbreviation: "GT", name: "Guatemala" }, { abbreviation: "GN", name: "Guinea" }, { abbreviation: "GW", name: "Guinea-Bissau" }, { abbreviation: "GY", name: "Guyana" }, { abbreviation: "HT", name: "Haiti" }, { abbreviation: "HM", name: "Heard and Mc Donald Islands" }, { abbreviation: "VA", name: "Holy See (Vatican City State)" }, { abbreviation: "HN", name: "Honduras" }, { abbreviation: "HK", name: "Hong Kong" }, { abbreviation: "HU", name: "Hungary" }, { abbreviation: "IS", name: "Iceland" }, { abbreviation: "IN", name: "India" }, { abbreviation: "ID", name: "Indonesia" }, { abbreviation: "IR", name: "Iran (Islamic Republic of)" }, { abbreviation: "IQ", name: "Iraq" }, { abbreviation: "IE", name: "Ireland" }, { abbreviation: "IL", name: "Israel" }, { abbreviation: "IT", name: "Italy" }, { abbreviation: "JM", name: "Jamaica" }, { abbreviation: "JP", name: "Japan" }, { abbreviation: "JO", name: "Jordan" }, { abbreviation: "KZ", name: "Kazakhstan" }, { abbreviation: "KE", name: "Kenya" }, { abbreviation: "KI", name: "Kiribati" }, { abbreviation: "KP", name: "Korea, Democratic People's Republic of" }, { abbreviation: "KR", name: "Korea, Republic of" }, { abbreviation: "KW", name: "Kuwait" }, { abbreviation: "KG", name: "Kyrgyzstan" }, { abbreviation: "LA", name: "Lao People's Democratic Republic" }, { abbreviation: "LV", name: "Latvia" }, { abbreviation: "LB", name: "Lebanon" }, { abbreviation: "LS", name: "Lesotho" }, { abbreviation: "LR", name: "Liberia" }, { abbreviation: "LY", name: "Libyan Arab Jamahiriya" }, { abbreviation: "LI", name: "Liechtenstein" }, { abbreviation: "LT", name: "Lithuania" }, { abbreviation: "LU", name: "Luxembourg" }, { abbreviation: "MO", name: "Macau" }, { abbreviation: "MK", name: "Macedonia, The Former Yugoslav Republic of" }, { abbreviation: "MG", name: "Madagascar" }, { abbreviation: "MW", name: "Malawi" }, { abbreviation: "MY", name: "Malaysia" }, { abbreviation: "MV", name: "Maldives" }, { abbreviation: "ML", name: "Mali" }, { abbreviation: "MT", name: "Malta" }, { abbreviation: "MH", name: "Marshall Islands" }, { abbreviation: "MQ", name: "Martinique" }, { abbreviation: "MR", name: "Mauritania" }, { abbreviation: "MU", name: "Mauritius" }, { abbreviation: "YT", name: "Mayotte" }, { abbreviation: "MX", name: "Mexico" }, { abbreviation: "FM", name: "Micronesia, Federated States of" }, { abbreviation: "MD", name: "Moldova, Republic of" }, { abbreviation: "MC", name: "Monaco" }, { abbreviation: "MN", name: "Mongolia" }, { abbreviation: "MS", name: "Montserrat" }, { abbreviation: "MA", name: "Morocco" }, { abbreviation: "MZ", name: "Mozambique" }, { abbreviation: "MM", name: "Myanmar" }, { abbreviation: "NA", name: "Namibia" }, { abbreviation: "NR", name: "Nauru" }, { abbreviation: "NP", name: "Nepal" }, { abbreviation: "NL", name: "Netherlands" }, { abbreviation: "AN", name: "Netherlands Antilles" }, { abbreviation: "NC", name: "New Caledonia" }, { abbreviation: "NZ", name: "New Zealand" }, { abbreviation: "NI", name: "Nicaragua" }, { abbreviation: "NE", name: "Niger" }, { abbreviation: "NG", name: "Nigeria" }, { abbreviation: "NU", name: "Niue" }, { abbreviation: "NF", name: "Norfolk Island" }, { abbreviation: "MP", name: "Northern Mariana Islands" }, { abbreviation: "NO", name: "Norway" }, { abbreviation: "OM", name: "Oman" }, { abbreviation: "PK", name: "Pakistan" }, { abbreviation: "PW", name: "Palau" }, { abbreviation: "PA", name: "Panama" }, { abbreviation: "PG", name: "Papua New Guinea" }, { abbreviation: "PY", name: "Paraguay" }, { abbreviation: "PE", name: "Peru" }, { abbreviation: "PH", name: "Philippines" }, { abbreviation: "PN", name: "Pitcairn" }, { abbreviation: "PL", name: "Poland" }, { abbreviation: "PT", name: "Portugal" }, { abbreviation: "PR", name: "Puerto Rico" }, { abbreviation: "QA", name: "Qatar" }, { abbreviation: "RE", name: "Reunion" }, { abbreviation: "RO", name: "Romania" }, { abbreviation: "RU", name: "Russian Federation" }, { abbreviation: "RW", name: "Rwanda" }, { abbreviation: "KN", name: "Saint Kitts and Nevis" }, { abbreviation: "LC", name: "Saint LUCIA" }, { abbreviation: "VC", name: "Saint Vincent and the Grenadines" }, { abbreviation: "WS", name: "Samoa" }, { abbreviation: "SM", name: "San Marino" }, { abbreviation: "ST", name: "Sao Tome and Principe" }, { abbreviation: "SA", name: "Saudi Arabia" }, { abbreviation: "SN", name: "Senegal" }, { abbreviation: "SC", name: "Seychelles" }, { abbreviation: "SL", name: "Sierra Leone" }, { abbreviation: "SG", name: "Singapore" }, { abbreviation: "SK", name: "Slovakia (Slovak Republic)" }, { abbreviation: "SI", name: "Slovenia" }, { abbreviation: "SB", name: "Solomon Islands" }, { abbreviation: "SO", name: "Somalia" }, { abbreviation: "ZA", name: "South Africa" }, { abbreviation: "GS", name: "South Georgia and the South Sandwich Islands" }, { abbreviation: "ES", name: "Spain" }, { abbreviation: "LK", name: "Sri Lanka" }, { abbreviation: "SH", name: "St. Helena" }, { abbreviation: "PM", name: "St. Pierre and Miquelon" }, { abbreviation: "SD", name: "Sudan" }, { abbreviation: "SR", name: "Suriname" }, { abbreviation: "SJ", name: "Svalbard and Jan Mayen Islands" }, { abbreviation: "SZ", name: "Swaziland" }, { abbreviation: "SE", name: "Sweden" }, { abbreviation: "CH", name: "Switzerland" }, { abbreviation: "SY", name: "Syrian Arab Republic" }, { abbreviation: "TW", name: "Taiwan, Province of China" }, { abbreviation: "TJ", name: "Tajikistan" }, { abbreviation: "TZ", name: "Tanzania, United Republic of" }, { abbreviation: "TH", name: "Thailand" }, { abbreviation: "TG", name: "Togo" }, { abbreviation: "TK", name: "Tokelau" }, { abbreviation: "TO", name: "Tonga" }, { abbreviation: "TT", name: "Trinidad and Tobago" }, { abbreviation: "TN", name: "Tunisia" }, { abbreviation: "TR", name: "Turkey" }, { abbreviation: "TM", name: "Turkmenistan" }, { abbreviation: "TC", name: "Turks and Caicos Islands" }, { abbreviation: "TV", name: "Tuvalu" }, { abbreviation: "UG", name: "Uganda" }, { abbreviation: "UA", name: "Ukraine" }, { abbreviation: "AE", name: "United Arab Emirates" }, { abbreviation: "GB", name: "United Kingdom" }, { abbreviation: "US", name: "United States" }, { abbreviation: "UM", name: "United States Minor Outlying Islands" }, { abbreviation: "UY", name: "Uruguay" }, { abbreviation: "UZ", name: "Uzbekistan" }, { abbreviation: "VU", name: "Vanuatu" }, { abbreviation: "VE", name: "Venezuela" }, { abbreviation: "VN", name: "Viet Nam" }, { abbreviation: "VG", name: "Virgin Islands (British)" }, { abbreviation: "VI", name: "Virgin Islands (U.S.)" }, { abbreviation: "WF", name: "Wallis and Futuna Islands" }, { abbreviation: "EH", name: "Western Sahara" }, { abbreviation: "YE", name: "Yemen" }, { abbreviation: "YU", name: "Yugoslavia" }, { abbreviation: "ZM", name: "Zambia" }, { abbreviation: "ZW", name: "Zimbabwe" }];
+
+  var CountryBinder = exports.CountryBinder = (_dec = (0, _aureliaTemplating.viewEngineHooks)(), _dec(_class = function () {
+    function CountryBinder() {
+      _classCallCheck(this, CountryBinder);
+    }
+
+    CountryBinder.prototype.beforeBind = function beforeBind(view) {
+      view.overrideContext.countries = countries;
+    };
+
+    return CountryBinder;
+  }()) || _class);
+});
+define('resources/data/timezones',["exports", "aurelia-templating"], function (exports, _aureliaTemplating) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.TimeZoneBinder = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var timezones = [{ value: "-12.0", display: "(GMT -12:00) Eniwetok, Kwajalein" }, { value: "-11.0", display: "(GMT -11:00) Midway Island, Samoa" }, { value: "-10.0", display: "(GMT -10:00) Hawaii" }, { value: "-9.0", display: "(GMT -9:00) Alaska" }, { value: "-8.0", display: "(GMT -8:00) Pacific Time (US & Canada)" }, { value: "-7.0", display: "(GMT -7:00) Mountain Time (US & Canada)" }, { value: "-6.0", display: "(GMT -6:00) Central Time (US & Canada), Mexico City" }, { value: "-5.0", display: "(GMT -5:00) Eastern Time (US & Canada), Bogota, Lima" }, { value: "-4.0", display: "(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz" }, { value: "-3.5", display: "(GMT -3:30) Newfoundland" }, { value: "-3.0", display: "(GMT -3:00) Brazil, Buenos Aires, Georgetown" }, { value: "-2.0", display: "(GMT -2:00) Mid-Atlantic" }, { value: "-1.0", display: "(GMT -1:00 hour) Azores, Cape Verde Islands" }, { value: "0.0", display: "(GMT) Western Europe Time, London, Lisbon, Casablanca" }, { value: "1.0", display: "(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris" }, { value: "2.0", display: "(GMT +2:00) Kaliningrad, South Africa" }, { value: "3.0", display: "(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg" }, { value: "3.5", display: "(GMT +3:30) Tehran" }, { value: "4.0", display: "(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi" }, { value: "4.5", display: "(GMT +4:30) Kabul" }, { value: "5.0", display: "(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent" }, { value: "5.5", display: "(GMT +5:30) Bombay, Calcutta, Madras, New Delhi" }, { value: "5.75", display: "(GMT +5:45) Kathmandu" }, { value: "6.0", display: "(GMT +6:00) Almaty, Dhaka, Colombo" }, { value: "7.0", display: "(GMT +7:00) Bangkok, Hanoi, Jakarta" }, { value: "8.0", display: "(GMT +8:00) Beijing, Perth, Singapore, Hong Kong" }, { value: "9.0", display: "(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk" }, { value: "9.5", display: "(GMT +9:30) Adelaide, Darwin" }, { value: "10.0", display: "(GMT +10:00) Eastern Australia, Guam, Vladivostok" }, { value: "11.0", display: "(GMT +11:00) Magadan, Solomon Islands, New Caledonia" }, { value: "12.0", display: "(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka" }];
+
+  var TimeZoneBinder = exports.TimeZoneBinder = (_dec = (0, _aureliaTemplating.viewEngineHooks)(), _dec(_class = function () {
+    function TimeZoneBinder() {
+      _classCallCheck(this, TimeZoneBinder);
+    }
+
+    TimeZoneBinder.prototype.beforeBind = function beforeBind(view) {
+      view.overrideContext.timezones = timezones;
+    };
+
+    return TimeZoneBinder;
   }()) || _class);
 });
 define('resources/dialogs/common-dialogs',['exports', 'aurelia-framework', 'aurelia-dialog', './message-box', './prompt'], function (exports, _aureliaFramework, _aureliaDialog, _messageBox, _prompt) {
@@ -947,6 +1520,480 @@ define('resources/dialogs/prompt',['exports', 'aurelia-dialog', 'aurelia-framewo
     return Prompt;
   }()) || _class);
 });
+define('resources/elements/bar-chart',['exports', './chart-element'], function (exports, _chartElement) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.BarChart = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var BarChart = exports.BarChart = (_dec = (0, _chartElement.chartElement)('Bar'), _dec(_class = function BarChart() {
+    _classCallCheck(this, BarChart);
+  }) || _class);
+});
+define('resources/elements/chart-data',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.ChartData = undefined;
+
+  function _initDefineProp(target, property, descriptor, context) {
+    if (!descriptor) return;
+    Object.defineProperty(target, property, {
+      enumerable: descriptor.enumerable,
+      configurable: descriptor.configurable,
+      writable: descriptor.writable,
+      value: descriptor.initializer ? descriptor.initializer.call(context) : void 0
+    });
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
+    var desc = {};
+    Object['ke' + 'ys'](descriptor).forEach(function (key) {
+      desc[key] = descriptor[key];
+    });
+    desc.enumerable = !!desc.enumerable;
+    desc.configurable = !!desc.configurable;
+
+    if ('value' in desc || desc.initializer) {
+      desc.writable = true;
+    }
+
+    desc = decorators.slice().reverse().reduce(function (desc, decorator) {
+      return decorator(target, property, desc) || desc;
+    }, desc);
+
+    if (context && desc.initializer !== void 0) {
+      desc.value = desc.initializer ? desc.initializer.call(context) : void 0;
+      desc.initializer = undefined;
+    }
+
+    if (desc.initializer === void 0) {
+      Object['define' + 'Property'](target, property, desc);
+      desc = null;
+    }
+
+    return desc;
+  }
+
+  function _initializerWarningHelper(descriptor, context) {
+    throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
+  }
+
+  var _dec, _class, _desc, _value, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9;
+
+  var ChartData = exports.ChartData = (_dec = (0, _aureliaFramework.noView)(), _dec(_class = (_class2 = function ChartData() {
+    _classCallCheck(this, ChartData);
+
+    _initDefineProp(this, 'data', _descriptor, this);
+
+    _initDefineProp(this, 'label', _descriptor2, this);
+
+    _initDefineProp(this, 'fillColor', _descriptor3, this);
+
+    _initDefineProp(this, 'strokeColor', _descriptor4, this);
+
+    _initDefineProp(this, 'pointStrokeColor', _descriptor5, this);
+
+    _initDefineProp(this, 'pointHighlightFill', _descriptor6, this);
+
+    _initDefineProp(this, 'pointHighlightStroke', _descriptor7, this);
+
+    _initDefineProp(this, 'highlightFill', _descriptor8, this);
+
+    _initDefineProp(this, 'highlightStroke', _descriptor9, this);
+  }, (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'data', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return [];
+    }
+  }), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, 'label', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return '';
+    }
+  }), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, 'fillColor', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return 'rgba(220,220,220,0.2)';
+    }
+  }), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, 'strokeColor', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return 'rgba(220,220,220,1)';
+    }
+  }), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, 'pointStrokeColor', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return "#fff";
+    }
+  }), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, 'pointHighlightFill', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return "#fff";
+    }
+  }), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, 'pointHighlightStroke', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return "rgba(220,220,220,1)";
+    }
+  }), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, 'highlightFill', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return 'rgba(220,220,220,1)';
+    }
+  }), _descriptor9 = _applyDecoratedDescriptor(_class2.prototype, 'highlightStroke', [_aureliaFramework.bindable], {
+    enumerable: true,
+    initializer: function initializer() {
+      return 'rgba(220,220,220,1)';
+    }
+  })), _class2)) || _class);
+});
+define('resources/elements/chart-element',['exports', 'chartjs', 'aurelia-framework'], function (exports, _chartjs, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.chartElement = chartElement;
+
+  var _chartjs2 = _interopRequireDefault(_chartjs);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function chartElement(api) {
+    return function (target) {
+      (0, _aureliaFramework.bindable)('labels')(target);
+      (0, _aureliaFramework.children)({ selector: 'chart-data', name: 'datasets' })(target);
+      (0, _aureliaFramework.inlineView)('\n    <template>\n      <canvas ref="canvas"></canvas>\n      <slot></slot>\n    </template>\n    ')(target);
+
+      target.prototype.bind = function () {
+        this.context = this.canvas.getContext('2d');
+      };
+
+      target.prototype.attached = function () {
+        this.render();
+      };
+
+      target.prototype.render = function () {
+        if (this.chart) {
+          this.chart.destroy();
+        }
+
+        var data = {
+          labels: this.labels,
+          datasets: this.datasets
+        };
+
+        this.chart = new _chartjs2.default(this.context)[api](data);
+      };
+
+      target.prototype.detached = function () {
+        if (this.chart) {
+          this.chart.destroy();
+        }
+      };
+    };
+  }
+});
+define('resources/elements/data-grid',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.DataGrid = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _dec2, _class;
+
+  var DataGrid = exports.DataGrid = (_dec = (0, _aureliaFramework.inject)(Element), _dec2 = (0, _aureliaFramework.processContent)(parseColumns), _dec(_class = _dec2(_class = function () {
+    function DataGrid(element) {
+      var _this = this;
+
+      _classCallCheck(this, DataGrid);
+
+      this.element = element;
+      this.onResize = function () {
+        return _this.size();
+      };
+    }
+
+    DataGrid.prototype.bind = function bind() {
+      window.addEventListener('resize', this.onResize);
+    };
+
+    DataGrid.prototype.attached = function attached() {
+      this.headerCells = this.element.getElementsByClassName('header-row')[0].children;
+      this.sizingCells = this.element.getElementsByClassName('sizing-row')[0].children;
+      this.size();
+    };
+
+    DataGrid.prototype.unbind = function unbind() {
+      window.removeEventListener('resize', this.onResize);
+    };
+
+    DataGrid.prototype.size = function size() {
+      for (var i = 0, ii = this.headerCells.length - 1; i < ii; ++i) {
+        this.sizingCells[i].style.width = this.headerCells[i].offsetWidth + 'px';
+      }
+    };
+
+    return DataGrid;
+  }()) || _class) || _class);
+
+
+  function parseColumns(compiler, resources, node, instruction) {
+    var columns = node.querySelectorAll('grid-column');
+    var headerCells = '';
+    var dataCells = '';
+    var sizingCells = '';
+    var itemsExpression = node.getAttribute('items.bind');
+
+    node.removeAttribute('items.bind');
+
+    for (var i = 0, ii = columns.length; i < ii; ++i) {
+      var column = columns[i];
+      var cellTemplate = void 0;
+
+      headerCells += '<th>' + column.getAttribute('heading') + '</th>';
+      sizingCells += '<td></td>';
+      cellTemplate = column.innerHTML.trim();
+
+      if (cellTemplate) {
+        dataCells += '<td>' + cellTemplate + '</td>';
+      } else {
+        dataCells += '<td>${item.' + column.getAttribute('property') + '}</td>';
+      }
+    }
+
+    node.innerHTML = '\n  <table class="grid-header table">\n    <thead>\n      <tr class="header-row">' + headerCells + '</tr>\n    </thead>\n  </table>\n  <div class="grid-container">\n    <table class="grid-rows table table-striped">\n      <tbody>\n        <tr class="sizing-row">' + sizingCells + '</tr>\n        <tr repeat.for="item of ' + itemsExpression + '" class="item-row">' + dataCells + '</tr>\n      </tbody>\n    </table>\n  </div>\n  ';
+
+    return true;
+  }
+});
+define('resources/elements/line-chart',['exports', './chart-element'], function (exports, _chartElement) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.LineChart = undefined;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _dec, _class;
+
+  var LineChart = exports.LineChart = (_dec = (0, _chartElement.chartElement)('Line'), _dec(_class = function LineChart() {
+    _classCallCheck(this, LineChart);
+  }) || _class);
+});
+define('resources/elements/rich-text-editor',['exports', 'aurelia-framework'], function (exports, _aureliaFramework) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.RichTextEditor = undefined;
+
+  function _initDefineProp(target, property, descriptor, context) {
+    if (!descriptor) return;
+    Object.defineProperty(target, property, {
+      enumerable: descriptor.enumerable,
+      configurable: descriptor.configurable,
+      writable: descriptor.writable,
+      value: descriptor.initializer ? descriptor.initializer.call(context) : void 0
+    });
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
+    var desc = {};
+    Object['ke' + 'ys'](descriptor).forEach(function (key) {
+      desc[key] = descriptor[key];
+    });
+    desc.enumerable = !!desc.enumerable;
+    desc.configurable = !!desc.configurable;
+
+    if ('value' in desc || desc.initializer) {
+      desc.writable = true;
+    }
+
+    desc = decorators.slice().reverse().reduce(function (desc, decorator) {
+      return decorator(target, property, desc) || desc;
+    }, desc);
+
+    if (context && desc.initializer !== void 0) {
+      desc.value = desc.initializer ? desc.initializer.call(context) : void 0;
+      desc.initializer = undefined;
+    }
+
+    if (desc.initializer === void 0) {
+      Object['define' + 'Property'](target, property, desc);
+      desc = null;
+    }
+
+    return desc;
+  }
+
+  function _initializerWarningHelper(descriptor, context) {
+    throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
+  }
+
+  var _dec, _dec2, _dec3, _class, _desc, _value, _class2, _descriptor;
+
+  CKEDITOR.config.skin = 'bootstrapck';
+
+  var RichTextEditor = exports.RichTextEditor = (_dec = (0, _aureliaFramework.inject)(Element, _aureliaFramework.TaskQueue), _dec2 = (0, _aureliaFramework.noView)(), _dec3 = (0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), _dec(_class = _dec2(_class = (_class2 = function () {
+    function RichTextEditor(element, taskQueue) {
+      _classCallCheck(this, RichTextEditor);
+
+      _initDefineProp(this, 'value', _descriptor, this);
+
+      this.element = element;
+      this.taskQueue = taskQueue;
+      this.guard = false;
+    }
+
+    RichTextEditor.prototype.created = function created(owningView) {
+      var _this = this;
+
+      var original = owningView.removeNodes;
+      var that = this;
+
+      owningView.removeNodes = function () {
+        _this.editor.destroy();
+        original.call(owningView);
+      };
+    };
+
+    RichTextEditor.prototype.bind = function bind() {
+      var _this2 = this;
+
+      this.editor = CKEDITOR.appendTo(this.element, { removePlugins: 'resize, elementspath' }, this.value);
+
+      this.editor.on('change', function () {
+        var newValue = _this2.editor.getData();
+
+        if (_this2.value === newValue) {
+          return;
+        }
+
+        _this2.guard = true;
+        _this2.value = newValue;
+        _this2.taskQueue.queueMicroTask(function () {
+          return _this2.guard = false;
+        });
+      });
+    };
+
+    RichTextEditor.prototype.valueChanged = function valueChanged(newValue, oldValue) {
+      if (this.guard || !this.editor) {
+        return;
+      }
+
+      this.editor.setData(newValue);
+    };
+
+    return RichTextEditor;
+  }(), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'value', [_dec3], {
+    enumerable: true,
+    initializer: null
+  })), _class2)) || _class) || _class);
+});
+define('resources/messages/tab-opened',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var TabOpened = exports.TabOpened = function () {
+    function TabOpened(title, route, params) {
+      _classCallCheck(this, TabOpened);
+
+      this.title = title;
+      this.route = route;
+      this.params = params || {};
+      this.isActive = true;
+    }
+
+    TabOpened.prototype.updateActivation = function updateActivation(instruction) {
+      if (this.route !== instruction.config.name) {
+        this.isActive = false;
+        return;
+      }
+
+      var params = instruction.params;
+
+      for (var key in params) {
+        if (params[key] !== this.params[key].toString()) {
+          this.isActive = false;
+          return;
+        }
+      }
+
+      this.isActive = true;
+    };
+
+    TabOpened.prototype.matches = function matches(other) {
+      if (this.route !== other.route) {
+        return false;
+      }
+
+      for (var key in other.params) {
+        if (other.params[key] !== this.params[key]) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    return TabOpened;
+  }();
+});
 define('resources/value-converters/activity-type-to-route',['exports'], function (exports) {
   'use strict';
 
@@ -1013,8 +2060,8 @@ define('resources/value-converters/date',['exports', 'moment'], function (export
     return DateValueConverter;
   }();
 });
-define('resources/messages/tab-opened',["exports"], function (exports) {
-  "use strict";
+define('settings/account/index',['exports'], function (exports) {
+  'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -1026,51 +2073,1449 @@ define('resources/messages/tab-opened',["exports"], function (exports) {
     }
   }
 
-  var TabOpened = exports.TabOpened = function () {
-    function TabOpened(title, route, params) {
-      _classCallCheck(this, TabOpened);
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
 
-      this.title = title;
-      this.route = route;
-      this.params = params || {};
-      this.isActive = true;
-    }
-
-    TabOpened.prototype.updateActivation = function updateActivation(instruction) {
-      if (this.route !== instruction.config.name) {
-        this.isActive = false;
-        return;
-      }
-
-      var params = instruction.params;
-
-      for (var key in params) {
-        if (params[key] !== this.params[key].toString()) {
-          this.isActive = false;
-          return;
-        }
-      }
-
-      this.isActive = true;
-    };
-
-    TabOpened.prototype.matches = function matches(other) {
-      if (this.route !== other.route) {
-        return false;
-      }
-
-      for (var key in other.params) {
-        if (other.params[key] !== this.params[key]) {
-          return false;
-        }
-      }
-
-      return true;
-    };
-
-    return TabOpened;
-  }();
+    this.heading = 'Account';
+  };
 });
+define('settings/api/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'API';
+  };
+});
+define('settings/email/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Email';
+  };
+});
+define('settings/facebook/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Facebook';
+  };
+});
+define('settings/feedbacktab/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Feedback Tab';
+  };
+});
+define('settings/overview/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Overview';
+  };
+});
+define('settings/security/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Security';
+  };
+});
+define('settings/subscription/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Subscription';
+  };
+});
+define('settings/twitter/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Twitter';
+  };
+});
+define('settings/webportal/index',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var Index = exports.Index = function Index() {
+    _classCallCheck(this, Index);
+
+    this.heading = 'Web Portal';
+  };
+});
+define('aurelia-validation/validate-binding-behavior',["require", "exports", 'aurelia-dependency-injection', 'aurelia-task-queue', './validation-controller', './validate-trigger'], function (require, exports, aurelia_dependency_injection_1, aurelia_task_queue_1, validation_controller_1, validate_trigger_1) {
+    "use strict";
+    /**
+     * Binding behavior. Indicates the bound property should be validated.
+     */
+    var ValidateBindingBehavior = (function () {
+        function ValidateBindingBehavior(taskQueue) {
+            this.taskQueue = taskQueue;
+        }
+        /**
+        * Gets the DOM element associated with the data-binding. Most of the time it's
+        * the binding.target but sometimes binding.target is an aurelia custom element,
+        * which is a javascript "class" instance, so we need to use the controller to
+        * locate the actual DOM element.
+        */
+        ValidateBindingBehavior.prototype.getTarget = function (binding, view) {
+            var target = binding.target;
+            if (target instanceof Element) {
+                return target;
+            }
+            var controller;
+            for (var id in view.controllers) {
+                controller = view.controllers[id];
+                if (controller.viewModel === target) {
+                    break;
+                }
+            }
+            return controller.view.firstChild.parentNode;
+        };
+        ValidateBindingBehavior.prototype.bind = function (binding, source, rulesOrController, rules) {
+            var _this = this;
+            // identify the target element.
+            var target = this.getTarget(binding, source);
+            // locate the controller.
+            var controller;
+            if (rulesOrController instanceof validation_controller_1.ValidationController) {
+                controller = rulesOrController;
+            }
+            else {
+                controller = source.container.get(aurelia_dependency_injection_1.Optional.of(validation_controller_1.ValidationController));
+                rules = rulesOrController;
+            }
+            if (controller === null) {
+                throw new Error("A ValidationController has not been registered.");
+            }
+            controller.registerBinding(binding, target, rules);
+            binding.validationController = controller;
+            if (controller.validateTrigger === validate_trigger_1.validateTrigger.change) {
+                binding.standardUpdateSource = binding.updateSource;
+                binding.updateSource = function (value) {
+                    this.standardUpdateSource(value);
+                    this.validationController.validateBinding(this);
+                };
+            }
+            else if (controller.validateTrigger === validate_trigger_1.validateTrigger.blur) {
+                binding.validateBlurHandler = function () {
+                    _this.taskQueue.queueMicroTask(function () { return controller.validateBinding(binding); });
+                };
+                binding.validateTarget = target;
+                target.addEventListener('blur', binding.validateBlurHandler);
+            }
+            if (controller.validateTrigger !== validate_trigger_1.validateTrigger.manual) {
+                binding.standardUpdateTarget = binding.updateTarget;
+                binding.updateTarget = function (value) {
+                    this.standardUpdateTarget(value);
+                    this.validationController.resetBinding(this);
+                };
+            }
+        };
+        ValidateBindingBehavior.prototype.unbind = function (binding) {
+            // reset the binding to it's original state.
+            if (binding.standardUpdateSource) {
+                binding.updateSource = binding.standardUpdateSource;
+                binding.standardUpdateSource = null;
+            }
+            if (binding.standardUpdateTarget) {
+                binding.updateTarget = binding.standardUpdateTarget;
+                binding.standardUpdateTarget = null;
+            }
+            if (binding.validateBlurHandler) {
+                binding.validateTarget.removeEventListener('blur', binding.validateBlurHandler);
+                binding.validateBlurHandler = null;
+                binding.validateTarget = null;
+            }
+            binding.validationController.unregisterBinding(binding);
+            binding.validationController = null;
+        };
+        ValidateBindingBehavior.inject = [aurelia_task_queue_1.TaskQueue];
+        return ValidateBindingBehavior;
+    }());
+    exports.ValidateBindingBehavior = ValidateBindingBehavior;
+});
+
+define('aurelia-validation/validation-controller',["require", "exports", './validator', './validate-trigger', './property-info', './validation-error'], function (require, exports, validator_1, validate_trigger_1, property_info_1, validation_error_1) {
+    "use strict";
+    /**
+     * Orchestrates validation.
+     * Manages a set of bindings, renderers and objects.
+     * Exposes the current list of validation errors for binding purposes.
+     */
+    var ValidationController = (function () {
+        function ValidationController(validator) {
+            this.validator = validator;
+            // Registered bindings (via the validate binding behavior)
+            this.bindings = new Map();
+            // Renderers that have been added to the controller instance.
+            this.renderers = [];
+            /**
+             * Errors that have been rendered by the controller.
+             */
+            this.errors = [];
+            /**
+             *  Whether the controller is currently validating.
+             */
+            this.validating = false;
+            // Elements related to errors that have been rendered.
+            this.elements = new Map();
+            // Objects that have been added to the controller instance (entity-style validation).
+            this.objects = new Map();
+            /**
+             * The trigger that will invoke automatic validation of a property used in a binding.
+             */
+            this.validateTrigger = validate_trigger_1.validateTrigger.blur;
+            // Promise that resolves when validation has completed.
+            this.finishValidating = Promise.resolve();
+        }
+        /**
+         * Adds an object to the set of objects that should be validated when validate is called.
+         * @param object The object.
+         * @param rules Optional. The rules. If rules aren't supplied the Validator implementation will lookup the rules.
+         */
+        ValidationController.prototype.addObject = function (object, rules) {
+            this.objects.set(object, rules);
+        };
+        /**
+         * Removes an object from the set of objects that should be validated when validate is called.
+         * @param object The object.
+         */
+        ValidationController.prototype.removeObject = function (object) {
+            this.objects.delete(object);
+            this.processErrorDelta(this.errors.filter(function (error) { return error.object === object; }), []);
+        };
+        /**
+         * Adds and renders a ValidationError.
+         */
+        ValidationController.prototype.addError = function (message, object, propertyName) {
+            var error = new validation_error_1.ValidationError({}, message, object, propertyName);
+            this.processErrorDelta([], [error]);
+            return error;
+        };
+        /**
+         * Removes and unrenders a ValidationError.
+         */
+        ValidationController.prototype.removeError = function (error) {
+            if (this.errors.indexOf(error) !== -1) {
+                this.processErrorDelta([error], []);
+            }
+        };
+        /**
+         * Adds a renderer.
+         * @param renderer The renderer.
+         */
+        ValidationController.prototype.addRenderer = function (renderer) {
+            var _this = this;
+            this.renderers.push(renderer);
+            renderer.render({
+                render: this.errors.map(function (error) { return ({ error: error, elements: _this.elements.get(error) }); }),
+                unrender: []
+            });
+        };
+        /**
+         * Removes a renderer.
+         * @param renderer The renderer.
+         */
+        ValidationController.prototype.removeRenderer = function (renderer) {
+            var _this = this;
+            this.renderers.splice(this.renderers.indexOf(renderer), 1);
+            renderer.render({
+                render: [],
+                unrender: this.errors.map(function (error) { return ({ error: error, elements: _this.elements.get(error) }); })
+            });
+        };
+        /**
+         * Registers a binding with the controller.
+         * @param binding The binding instance.
+         * @param target The DOM element.
+         * @param rules (optional) rules associated with the binding. Validator implementation specific.
+         */
+        ValidationController.prototype.registerBinding = function (binding, target, rules) {
+            this.bindings.set(binding, { target: target, rules: rules });
+        };
+        /**
+         * Unregisters a binding with the controller.
+         * @param binding The binding instance.
+         */
+        ValidationController.prototype.unregisterBinding = function (binding) {
+            this.resetBinding(binding);
+            this.bindings.delete(binding);
+        };
+        /**
+         * Interprets the instruction and returns a predicate that will identify
+         * relevant errors in the list of rendered errors.
+         */
+        ValidationController.prototype.getInstructionPredicate = function (instruction) {
+            if (instruction) {
+                var object_1 = instruction.object, propertyName_1 = instruction.propertyName, rules_1 = instruction.rules;
+                var predicate_1;
+                if (instruction.propertyName) {
+                    predicate_1 = function (x) { return x.object === object_1 && x.propertyName === propertyName_1; };
+                }
+                else {
+                    predicate_1 = function (x) { return x.object === object_1; };
+                }
+                // todo: move to Validator interface:
+                if (rules_1 && rules_1.indexOf) {
+                    return function (x) { return predicate_1(x) && rules_1.indexOf(x.rule) !== -1; };
+                }
+                return predicate_1;
+            }
+            else {
+                return function () { return true; };
+            }
+        };
+        /**
+         * Validates and renders errors.
+         * @param instruction Optional. Instructions on what to validate. If undefined, all objects and bindings will be validated.
+         */
+        ValidationController.prototype.validate = function (instruction) {
+            var _this = this;
+            // Get a function that will process the validation instruction.
+            var execute;
+            if (instruction) {
+                var object_2 = instruction.object, propertyName_2 = instruction.propertyName, rules_2 = instruction.rules;
+                // if rules were not specified, check the object map.
+                rules_2 = rules_2 || this.objects.get(object_2);
+                // property specified?
+                if (instruction.propertyName === undefined) {
+                    // validate the specified object.
+                    execute = function () { return _this.validator.validateObject(object_2, rules_2); };
+                }
+                else {
+                    // validate the specified property.
+                    execute = function () { return _this.validator.validateProperty(object_2, propertyName_2, rules_2); };
+                }
+            }
+            else {
+                // validate all objects and bindings.
+                execute = function () {
+                    var promises = [];
+                    for (var _i = 0, _a = Array.from(_this.objects); _i < _a.length; _i++) {
+                        var _b = _a[_i], object = _b[0], rules = _b[1];
+                        promises.push(_this.validator.validateObject(object, rules));
+                    }
+                    for (var _c = 0, _d = Array.from(_this.bindings); _c < _d.length; _c++) {
+                        var _e = _d[_c], binding = _e[0], rules = _e[1].rules;
+                        var _f = property_info_1.getPropertyInfo(binding.sourceExpression, binding.source), object = _f.object, propertyName = _f.propertyName;
+                        if (_this.objects.has(object)) {
+                            continue;
+                        }
+                        promises.push(_this.validator.validateProperty(object, propertyName, rules));
+                    }
+                    return Promise.all(promises).then(function (errorSets) { return errorSets.reduce(function (a, b) { return a.concat(b); }, []); });
+                };
+            }
+            // Wait for any existing validation to finish, execute the instruction, render the errors.
+            this.validating = true;
+            var result = this.finishValidating
+                .then(execute)
+                .then(function (newErrors) {
+                var predicate = _this.getInstructionPredicate(instruction);
+                var oldErrors = _this.errors.filter(predicate);
+                _this.processErrorDelta(oldErrors, newErrors);
+                if (result === _this.finishValidating) {
+                    _this.validating = false;
+                }
+                return newErrors;
+            })
+                .catch(function (error) {
+                // recover, to enable subsequent calls to validate()
+                _this.validating = false;
+                _this.finishValidating = Promise.resolve();
+                return Promise.reject(error);
+            });
+            this.finishValidating = result;
+            return result;
+        };
+        /**
+         * Resets any rendered errors (unrenders).
+         * @param instruction Optional. Instructions on what to reset. If unspecified all rendered errors will be unrendered.
+         */
+        ValidationController.prototype.reset = function (instruction) {
+            var predicate = this.getInstructionPredicate(instruction);
+            var oldErrors = this.errors.filter(predicate);
+            this.processErrorDelta(oldErrors, []);
+        };
+        /**
+         * Gets the elements associated with an object and propertyName (if any).
+         */
+        ValidationController.prototype.getAssociatedElements = function (_a) {
+            var object = _a.object, propertyName = _a.propertyName;
+            var elements = [];
+            for (var _i = 0, _b = Array.from(this.bindings); _i < _b.length; _i++) {
+                var _c = _b[_i], binding = _c[0], target = _c[1].target;
+                var _d = property_info_1.getPropertyInfo(binding.sourceExpression, binding.source), o = _d.object, p = _d.propertyName;
+                if (o === object && p === propertyName) {
+                    elements.push(target);
+                }
+            }
+            return elements;
+        };
+        ValidationController.prototype.processErrorDelta = function (oldErrors, newErrors) {
+            // prepare the instruction.
+            var instruction = {
+                render: [],
+                unrender: []
+            };
+            // create a shallow copy of newErrors so we can mutate it without causing side-effects.
+            newErrors = newErrors.slice(0);
+            // create unrender instructions from the old errors.
+            var _loop_1 = function(oldError) {
+                // get the elements associated with the old error.
+                var elements = this_1.elements.get(oldError);
+                // remove the old error from the element map.
+                this_1.elements.delete(oldError);
+                // create the unrender instruction.
+                instruction.unrender.push({ error: oldError, elements: elements });
+                // determine if there's a corresponding new error for the old error we are unrendering.
+                var newErrorIndex = newErrors.findIndex(function (x) { return x.rule === oldError.rule && x.object === oldError.object && x.propertyName === oldError.propertyName; });
+                if (newErrorIndex === -1) {
+                    // no corresponding new error... simple remove.
+                    this_1.errors.splice(this_1.errors.indexOf(oldError), 1);
+                }
+                else {
+                    // there is a corresponding new error...        
+                    var newError = newErrors.splice(newErrorIndex, 1)[0];
+                    // get the elements that are associated with the new error.
+                    var elements_1 = this_1.getAssociatedElements(newError);
+                    this_1.elements.set(newError, elements_1);
+                    // create a render instruction for the new error.
+                    instruction.render.push({ error: newError, elements: elements_1 });
+                    // do an in-place replacement of the old error with the new error.
+                    // this ensures any repeats bound to this.errors will not thrash.
+                    this_1.errors.splice(this_1.errors.indexOf(oldError), 1, newError);
+                }
+            };
+            var this_1 = this;
+            for (var _i = 0, oldErrors_1 = oldErrors; _i < oldErrors_1.length; _i++) {
+                var oldError = oldErrors_1[_i];
+                _loop_1(oldError);
+            }
+            // create render instructions from the remaining new errors.
+            for (var _a = 0, newErrors_1 = newErrors; _a < newErrors_1.length; _a++) {
+                var error = newErrors_1[_a];
+                var elements = this.getAssociatedElements(error);
+                instruction.render.push({ error: error, elements: elements });
+                this.elements.set(error, elements);
+                this.errors.push(error);
+            }
+            // render.
+            for (var _b = 0, _c = this.renderers; _b < _c.length; _b++) {
+                var renderer = _c[_b];
+                renderer.render(instruction);
+            }
+        };
+        /**
+        * Validates the property associated with a binding.
+        */
+        ValidationController.prototype.validateBinding = function (binding) {
+            if (!binding.isBound) {
+                return;
+            }
+            var _a = property_info_1.getPropertyInfo(binding.sourceExpression, binding.source), object = _a.object, propertyName = _a.propertyName;
+            var registeredBinding = this.bindings.get(binding);
+            var rules = registeredBinding ? registeredBinding.rules : undefined;
+            this.validate({ object: object, propertyName: propertyName, rules: rules });
+        };
+        /**
+        * Resets the errors for a property associated with a binding.
+        */
+        ValidationController.prototype.resetBinding = function (binding) {
+            var _a = property_info_1.getPropertyInfo(binding.sourceExpression, binding.source), object = _a.object, propertyName = _a.propertyName;
+            this.reset({ object: object, propertyName: propertyName });
+        };
+        ValidationController.inject = [validator_1.Validator];
+        return ValidationController;
+    }());
+    exports.ValidationController = ValidationController;
+});
+
+define('aurelia-validation/validator',["require", "exports"], function (require, exports) {
+    "use strict";
+    /**
+     * Validates.
+     * Responsible for validating objects and properties.
+     */
+    var Validator = (function () {
+        function Validator() {
+        }
+        return Validator;
+    }());
+    exports.Validator = Validator;
+});
+
+define('aurelia-validation/validate-trigger',["require", "exports"], function (require, exports) {
+    "use strict";
+    /**
+    * Validation triggers.
+    */
+    exports.validateTrigger = {
+        /**
+        * Validate the binding when the binding's target element fires a DOM "blur" event.
+        */
+        blur: 'blur',
+        /**
+        * Validate the binding when it updates the model due to a change in the view.
+        * Not specific to DOM "change" events.
+        */
+        change: 'change',
+        /**
+        * Manual validation.  Use the controller's `validate()` and  `reset()` methods
+        * to validate all bindings.
+        */
+        manual: 'manual'
+    };
+});
+
+define('aurelia-validation/property-info',["require", "exports", 'aurelia-binding'], function (require, exports, aurelia_binding_1) {
+    "use strict";
+    function getObject(expression, objectExpression, source) {
+        var value = objectExpression.evaluate(source, null);
+        if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+            return value;
+        }
+        if (value === null) {
+            value = 'null';
+        }
+        else if (value === undefined) {
+            value = 'undefined';
+        }
+        throw new Error("The '" + objectExpression + "' part of '" + expression + "' evaluates to " + value + " instead of an object.");
+    }
+    /**
+     * Retrieves the object and property name for the specified expression.
+     * @param expression The expression
+     * @param source The scope
+     */
+    function getPropertyInfo(expression, source) {
+        var originalExpression = expression;
+        while (expression instanceof aurelia_binding_1.BindingBehavior || expression instanceof aurelia_binding_1.ValueConverter) {
+            expression = expression.expression;
+        }
+        var object;
+        var propertyName;
+        if (expression instanceof aurelia_binding_1.AccessScope) {
+            object = source.bindingContext;
+            propertyName = expression.name;
+        }
+        else if (expression instanceof aurelia_binding_1.AccessMember) {
+            object = getObject(originalExpression, expression.object, source);
+            propertyName = expression.name;
+        }
+        else if (expression instanceof aurelia_binding_1.AccessKeyed) {
+            object = getObject(originalExpression, expression.object, source);
+            propertyName = expression.key.evaluate(source);
+        }
+        else {
+            throw new Error("Expression '" + originalExpression + "' is not compatible with the validate binding-behavior.");
+        }
+        return { object: object, propertyName: propertyName };
+    }
+    exports.getPropertyInfo = getPropertyInfo;
+});
+
+define('aurelia-validation/validation-error',["require", "exports"], function (require, exports) {
+    "use strict";
+    /**
+     * A validation error.
+     */
+    var ValidationError = (function () {
+        /**
+         * @param rule The rule associated with the error. Validator implementation specific.
+         * @param message The error message.
+         * @param object The invalid object
+         * @param propertyName The name of the invalid property. Optional.
+         */
+        function ValidationError(rule, message, object, propertyName) {
+            if (propertyName === void 0) { propertyName = null; }
+            this.rule = rule;
+            this.message = message;
+            this.object = object;
+            this.propertyName = propertyName;
+            this.id = ValidationError.nextId++;
+        }
+        ValidationError.nextId = 0;
+        return ValidationError;
+    }());
+    exports.ValidationError = ValidationError;
+});
+
+define('aurelia-validation/validation-controller-factory',["require", "exports", 'aurelia-dependency-injection', './validation-controller'], function (require, exports, aurelia_dependency_injection_1, validation_controller_1) {
+    "use strict";
+    /**
+     * Creates ValidationController instances.
+     */
+    var ValidationControllerFactory = (function () {
+        function ValidationControllerFactory(container) {
+            this.container = container;
+        }
+        /**
+         * Creates a new controller and registers it in the current element's container so that it's
+         * available to the validate binding behavior and renderers.
+         */
+        ValidationControllerFactory.prototype.create = function () {
+            return this.container.invoke(validation_controller_1.ValidationController);
+        };
+        /**
+         * Creates a new controller and registers it in the current element's container so that it's
+         * available to the validate binding behavior and renderers.
+         */
+        ValidationControllerFactory.prototype.createForCurrentScope = function () {
+            var controller = this.create();
+            this.container.registerInstance(validation_controller_1.ValidationController, controller);
+            return controller;
+        };
+        ValidationControllerFactory.inject = [aurelia_dependency_injection_1.Container];
+        return ValidationControllerFactory;
+    }());
+    exports.ValidationControllerFactory = ValidationControllerFactory;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+define('aurelia-validation/validation-errors-custom-attribute',["require", "exports", 'aurelia-binding', 'aurelia-dependency-injection', 'aurelia-templating', './validation-controller'], function (require, exports, aurelia_binding_1, aurelia_dependency_injection_1, aurelia_templating_1, validation_controller_1) {
+    "use strict";
+    var ValidationErrorsCustomAttribute = (function () {
+        function ValidationErrorsCustomAttribute(boundaryElement, controllerAccessor) {
+            this.boundaryElement = boundaryElement;
+            this.controllerAccessor = controllerAccessor;
+            this.errors = [];
+        }
+        ValidationErrorsCustomAttribute.prototype.sort = function () {
+            this.errors.sort(function (a, b) {
+                if (a.targets[0] === b.targets[0]) {
+                    return 0;
+                }
+                return a.targets[0].compareDocumentPosition(b.targets[0]) & 2 ? 1 : -1;
+            });
+        };
+        ValidationErrorsCustomAttribute.prototype.interestingElements = function (elements) {
+            var _this = this;
+            return elements.filter(function (e) { return _this.boundaryElement.contains(e); });
+        };
+        ValidationErrorsCustomAttribute.prototype.render = function (instruction) {
+            var _loop_1 = function(error) {
+                var index = this_1.errors.findIndex(function (x) { return x.error === error; });
+                if (index !== -1) {
+                    this_1.errors.splice(index, 1);
+                }
+            };
+            var this_1 = this;
+            for (var _i = 0, _a = instruction.unrender; _i < _a.length; _i++) {
+                var error = _a[_i].error;
+                _loop_1(error);
+            }
+            for (var _b = 0, _c = instruction.render; _b < _c.length; _b++) {
+                var _d = _c[_b], error = _d.error, elements = _d.elements;
+                var targets = this.interestingElements(elements);
+                if (targets.length) {
+                    this.errors.push({ error: error, targets: targets });
+                }
+            }
+            this.sort();
+            this.value = this.errors;
+        };
+        ValidationErrorsCustomAttribute.prototype.bind = function () {
+            this.controllerAccessor().addRenderer(this);
+            this.value = this.errors;
+        };
+        ValidationErrorsCustomAttribute.prototype.unbind = function () {
+            this.controllerAccessor().removeRenderer(this);
+        };
+        ValidationErrorsCustomAttribute.inject = [Element, aurelia_dependency_injection_1.Lazy.of(validation_controller_1.ValidationController)];
+        ValidationErrorsCustomAttribute = __decorate([
+            aurelia_templating_1.customAttribute('validation-errors', aurelia_binding_1.bindingMode.twoWay)
+        ], ValidationErrorsCustomAttribute);
+        return ValidationErrorsCustomAttribute;
+    }());
+    exports.ValidationErrorsCustomAttribute = ValidationErrorsCustomAttribute;
+});
+
+define('aurelia-validation/validation-renderer-custom-attribute',["require", "exports", './validation-controller'], function (require, exports, validation_controller_1) {
+    "use strict";
+    var ValidationRendererCustomAttribute = (function () {
+        function ValidationRendererCustomAttribute() {
+        }
+        ValidationRendererCustomAttribute.prototype.created = function (view) {
+            this.container = view.container;
+        };
+        ValidationRendererCustomAttribute.prototype.bind = function () {
+            this.controller = this.container.get(validation_controller_1.ValidationController);
+            this.renderer = this.container.get(this.value);
+            this.controller.addRenderer(this.renderer);
+        };
+        ValidationRendererCustomAttribute.prototype.unbind = function () {
+            this.controller.removeRenderer(this.renderer);
+            this.controller = null;
+            this.renderer = null;
+        };
+        return ValidationRendererCustomAttribute;
+    }());
+    exports.ValidationRendererCustomAttribute = ValidationRendererCustomAttribute;
+});
+
+define('aurelia-validation/implementation/rules',["require", "exports"], function (require, exports) {
+    "use strict";
+    /**
+     * Sets, unsets and retrieves rules on an object or constructor function.
+     */
+    var Rules = (function () {
+        function Rules() {
+        }
+        /**
+         * Applies the rules to a target.
+         */
+        Rules.set = function (target, rules) {
+            if (target instanceof Function) {
+                target = target.prototype;
+            }
+            Object.defineProperty(target, Rules.key, { enumerable: false, configurable: false, writable: true, value: rules });
+        };
+        /**
+         * Removes rules from a target.
+         */
+        Rules.unset = function (target) {
+            if (target instanceof Function) {
+                target = target.prototype;
+            }
+            target[Rules.key] = null;
+        };
+        /**
+         * Retrieves the target's rules.
+         */
+        Rules.get = function (target) {
+            return target[Rules.key] || null;
+        };
+        /**
+         * The name of the property that stores the rules.
+         */
+        Rules.key = '__rules__';
+        return Rules;
+    }());
+    exports.Rules = Rules;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('aurelia-validation/implementation/standard-validator',["require", "exports", 'aurelia-templating', '../validator', '../validation-error', './rules', './validation-messages'], function (require, exports, aurelia_templating_1, validator_1, validation_error_1, rules_1, validation_messages_1) {
+    "use strict";
+    /**
+     * Validates.
+     * Responsible for validating objects and properties.
+     */
+    var StandardValidator = (function (_super) {
+        __extends(StandardValidator, _super);
+        function StandardValidator(messageProvider, resources) {
+            _super.call(this);
+            this.messageProvider = messageProvider;
+            this.lookupFunctions = resources.lookupFunctions;
+        }
+        StandardValidator.prototype.getMessage = function (rule, object, value) {
+            var expression = rule.message || this.messageProvider.getMessage(rule.messageKey);
+            var _a = rule.property, propertyName = _a.name, displayName = _a.displayName;
+            if (displayName === null && propertyName !== null) {
+                displayName = this.messageProvider.computeDisplayName(propertyName);
+            }
+            var overrideContext = {
+                $displayName: displayName,
+                $propertyName: propertyName,
+                $value: value,
+                $object: object,
+                $config: rule.config
+            };
+            return expression.evaluate({ bindingContext: object, overrideContext: overrideContext }, this.lookupFunctions);
+        };
+        StandardValidator.prototype.validate = function (object, propertyName, rules) {
+            var _this = this;
+            var errors = [];
+            // rules specified?
+            if (!rules) {
+                // no. locate the rules via metadata.
+                rules = rules_1.Rules.get(object);
+            }
+            // any rules?
+            if (!rules) {
+                return Promise.resolve(errors);
+            }
+            // are we validating all properties or a single property?
+            var validateAllProperties = propertyName === null || propertyName === undefined;
+            var addError = function (rule, value) {
+                var message = _this.getMessage(rule, object, value);
+                errors.push(new validation_error_1.ValidationError(rule, message, object, rule.property.name));
+            };
+            // validate each rule.
+            var promises = [];
+            var _loop_1 = function(i) {
+                var rule = rules[i];
+                // is the rule related to the property we're validating.
+                if (!validateAllProperties && rule.property.name !== propertyName) {
+                    return "continue";
+                }
+                // is this a conditional rule? is the condition met?
+                if (rule.when && !rule.when(object)) {
+                    return "continue";
+                }
+                // validate.
+                var value = rule.property.name === null ? object : object[rule.property.name];
+                var promiseOrBoolean = rule.condition(value, object);
+                if (promiseOrBoolean instanceof Promise) {
+                    promises.push(promiseOrBoolean.then(function (isValid) {
+                        if (!isValid) {
+                            addError(rule, value);
+                        }
+                    }));
+                    return "continue";
+                }
+                if (!promiseOrBoolean) {
+                    addError(rule, value);
+                }
+            };
+            for (var i = 0; i < rules.length; i++) {
+                _loop_1(i);
+            }
+            if (promises.length === 0) {
+                return Promise.resolve(errors);
+            }
+            return Promise.all(promises).then(function () { return errors; });
+        };
+        /**
+         * Validates the specified property.
+         * @param object The object to validate.
+         * @param propertyName The name of the property to validate.
+         * @param rules Optional. If unspecified, the rules will be looked up using the metadata
+         * for the object created by ValidationRules....on(class/object)
+         */
+        StandardValidator.prototype.validateProperty = function (object, propertyName, rules) {
+            return this.validate(object, propertyName, rules || null);
+        };
+        /**
+         * Validates all rules for specified object and it's properties.
+         * @param object The object to validate.
+         * @param rules Optional. If unspecified, the rules will be looked up using the metadata
+         * for the object created by ValidationRules....on(class/object)
+         */
+        StandardValidator.prototype.validateObject = function (object, rules) {
+            return this.validate(object, null, rules || null);
+        };
+        StandardValidator.inject = [validation_messages_1.ValidationMessageProvider, aurelia_templating_1.ViewResources];
+        return StandardValidator;
+    }(validator_1.Validator));
+    exports.StandardValidator = StandardValidator;
+});
+
+define('aurelia-validation/implementation/validation-messages',["require", "exports", './validation-parser'], function (require, exports, validation_parser_1) {
+    "use strict";
+    /**
+     * Dictionary of validation messages. [messageKey]: messageExpression
+     */
+    exports.validationMessages = {
+        /**
+         * The default validation message. Used with rules that have no standard message.
+         */
+        default: "${$displayName} is invalid.",
+        required: "${$displayName} is required.",
+        matches: "${$displayName} is not correctly formatted.",
+        email: "${$displayName} is not a valid email.",
+        minLength: "${$displayName} must be at least ${$config.length} character${$config.length === 1 ? '' : 's'}.",
+        maxLength: "${$displayName} cannot be longer than ${$config.length} character${$config.length === 1 ? '' : 's'}.",
+        minItems: "${$displayName} must contain at least ${$config.count} item${$config.count === 1 ? '' : 's'}.",
+        maxItems: "${$displayName} cannot contain more than ${$config.count} item${$config.count === 1 ? '' : 's'}.",
+    };
+    /**
+     * Retrieves validation messages and property display names.
+     */
+    var ValidationMessageProvider = (function () {
+        function ValidationMessageProvider(parser) {
+            this.parser = parser;
+        }
+        /**
+         * Returns a message binding expression that corresponds to the key.
+         * @param key The message key.
+         */
+        ValidationMessageProvider.prototype.getMessage = function (key) {
+            var message;
+            if (key in exports.validationMessages) {
+                message = exports.validationMessages[key];
+            }
+            else {
+                message = exports.validationMessages['default'];
+            }
+            return this.parser.parseMessage(message);
+        };
+        /**
+         * When a display name is not provided, this method is used to formulate
+         * a display name using the property name.
+         * Override this with your own custom logic.
+         * @param propertyName The property name.
+         */
+        ValidationMessageProvider.prototype.computeDisplayName = function (propertyName) {
+            // split on upper-case letters.
+            var words = propertyName.split(/(?=[A-Z])/).join(' ');
+            // capitalize first letter.
+            return words.charAt(0).toUpperCase() + words.slice(1);
+        };
+        ValidationMessageProvider.inject = [validation_parser_1.ValidationParser];
+        return ValidationMessageProvider;
+    }());
+    exports.ValidationMessageProvider = ValidationMessageProvider;
+});
+
+define('aurelia-validation/implementation/validation-parser',["require", "exports", 'aurelia-binding', 'aurelia-templating', './util'], function (require, exports, aurelia_binding_1, aurelia_templating_1, util_1) {
+    "use strict";
+    var ValidationParser = (function () {
+        function ValidationParser(parser, bindinqLanguage) {
+            this.parser = parser;
+            this.bindinqLanguage = bindinqLanguage;
+            this.emptyStringExpression = new aurelia_binding_1.LiteralString('');
+            this.nullExpression = new aurelia_binding_1.LiteralPrimitive(null);
+            this.undefinedExpression = new aurelia_binding_1.LiteralPrimitive(undefined);
+        }
+        ValidationParser.prototype.coalesce = function (part) {
+            // part === null || part === undefined ? '' : part
+            return new aurelia_binding_1.Conditional(new aurelia_binding_1.Binary('||', new aurelia_binding_1.Binary('===', part, this.nullExpression), new aurelia_binding_1.Binary('===', part, this.undefinedExpression)), this.emptyStringExpression, new aurelia_binding_1.CallMember(part, 'toString', []));
+        };
+        ValidationParser.prototype.parseMessage = function (message) {
+            var parts = this.bindinqLanguage.parseInterpolation(null, message);
+            if (parts === null) {
+                return new aurelia_binding_1.LiteralString(message);
+            }
+            var expression = new aurelia_binding_1.LiteralString(parts[0]);
+            for (var i = 1; i < parts.length; i += 2) {
+                expression = new aurelia_binding_1.Binary('+', expression, new aurelia_binding_1.Binary('+', this.coalesce(parts[i]), new aurelia_binding_1.LiteralString(parts[i + 1])));
+            }
+            return expression;
+        };
+        ValidationParser.prototype.getFunctionBody = function (f) {
+            function removeCommentsFromSource(str) {
+                return str.replace(/(?:\/\*(?:[\s\S]*?)\*\/)|(?:([\s;])+\/\/(?:.*)$)/gm, '$1');
+            }
+            var s = removeCommentsFromSource(f.toString());
+            return s.substring(s.indexOf('{') + 1, s.lastIndexOf('}'));
+        };
+        ValidationParser.prototype.getAccessorExpression = function (f) {
+            var body = this.getFunctionBody(f).trim();
+            body = body.replace(/^['"]use strict['"];/, '').trim();
+            body = body.substr('return'.length).trim();
+            body = body.replace(/;$/, '');
+            return this.parser.parse(body);
+        };
+        ValidationParser.prototype.parseProperty = function (property) {
+            var accessor;
+            if (util_1.isString(property)) {
+                accessor = this.parser.parse(property);
+            }
+            else {
+                accessor = this.getAccessorExpression(property);
+            }
+            if (accessor instanceof aurelia_binding_1.AccessScope
+                || accessor instanceof aurelia_binding_1.AccessMember && accessor.object instanceof aurelia_binding_1.AccessScope) {
+                return {
+                    name: accessor.name,
+                    displayName: null
+                };
+            }
+            throw new Error("Invalid subject: \"" + accessor + "\"");
+        };
+        ValidationParser.inject = [aurelia_binding_1.Parser, aurelia_templating_1.BindingLanguage];
+        return ValidationParser;
+    }());
+    exports.ValidationParser = ValidationParser;
+});
+
+define('aurelia-validation/implementation/util',["require", "exports"], function (require, exports) {
+    "use strict";
+    function isString(value) {
+        return Object.prototype.toString.call(value) === '[object String]';
+    }
+    exports.isString = isString;
+});
+
+define('aurelia-validation/implementation/validation-rules',["require", "exports", './util', './rules', './validation-messages'], function (require, exports, util_1, rules_1, validation_messages_1) {
+    "use strict";
+    /**
+     * Part of the fluent rule API. Enables customizing property rules.
+     */
+    var FluentRuleCustomizer = (function () {
+        function FluentRuleCustomizer(property, condition, config, fluentEnsure, fluentRules, parser) {
+            if (config === void 0) { config = {}; }
+            this.fluentEnsure = fluentEnsure;
+            this.fluentRules = fluentRules;
+            this.parser = parser;
+            this.rule = {
+                property: property,
+                condition: condition,
+                config: config,
+                when: null,
+                messageKey: 'default',
+                message: null
+            };
+            this.fluentEnsure.rules.push(this.rule);
+        }
+        /**
+         * Specifies the key to use when looking up the rule's validation message.
+         */
+        FluentRuleCustomizer.prototype.withMessageKey = function (key) {
+            this.rule.messageKey = key;
+            this.rule.message = null;
+            return this;
+        };
+        /**
+         * Specifies rule's validation message.
+         */
+        FluentRuleCustomizer.prototype.withMessage = function (message) {
+            this.rule.messageKey = 'custom';
+            this.rule.message = this.parser.parseMessage(message);
+            return this;
+        };
+        /**
+         * Specifies a condition that must be met before attempting to validate the rule.
+         * @param condition A function that accepts the object as a parameter and returns true
+         * or false whether the rule should be evaluated.
+         */
+        FluentRuleCustomizer.prototype.when = function (condition) {
+            this.rule.when = condition;
+            return this;
+        };
+        /**
+         * Tags the rule instance, enabling the rule to be found easily
+         * using ValidationRules.taggedRules(rules, tag)
+         */
+        FluentRuleCustomizer.prototype.tag = function (tag) {
+            this.rule.tag = tag;
+            return this;
+        };
+        ///// FluentEnsure APIs /////
+        /**
+         * Target a property with validation rules.
+         * @param property The property to target. Can be the property name or a property accessor function.
+         */
+        FluentRuleCustomizer.prototype.ensure = function (subject) {
+            return this.fluentEnsure.ensure(subject);
+        };
+        /**
+         * Targets an object with validation rules.
+         */
+        FluentRuleCustomizer.prototype.ensureObject = function () {
+            return this.fluentEnsure.ensureObject();
+        };
+        Object.defineProperty(FluentRuleCustomizer.prototype, "rules", {
+            /**
+             * Rules that have been defined using the fluent API.
+             */
+            get: function () {
+                return this.fluentEnsure.rules;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Applies the rules to a class or object, making them discoverable by the StandardValidator.
+         * @param target A class or object.
+         */
+        FluentRuleCustomizer.prototype.on = function (target) {
+            return this.fluentEnsure.on(target);
+        };
+        ///////// FluentRules APIs /////////
+        /**
+         * Applies an ad-hoc rule function to the ensured property or object.
+         * @param condition The function to validate the rule.
+         * Will be called with two arguments, the property value and the object.
+         * Should return a boolean or a Promise that resolves to a boolean.
+         */
+        FluentRuleCustomizer.prototype.satisfies = function (condition, config) {
+            return this.fluentRules.satisfies(condition, config);
+        };
+        /**
+         * Applies a rule by name.
+         * @param name The name of the custom or standard rule.
+         * @param args The rule's arguments.
+         */
+        FluentRuleCustomizer.prototype.satisfiesRule = function (name) {
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            return (_a = this.fluentRules).satisfiesRule.apply(_a, [name].concat(args));
+            var _a;
+        };
+        /**
+         * Applies the "required" rule to the property.
+         * The value cannot be null, undefined or whitespace.
+         */
+        FluentRuleCustomizer.prototype.required = function () {
+            return this.fluentRules.required();
+        };
+        /**
+         * Applies the "matches" rule to the property.
+         * Value must match the specified regular expression.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRuleCustomizer.prototype.matches = function (regex) {
+            return this.fluentRules.matches(regex);
+        };
+        /**
+         * Applies the "email" rule to the property.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRuleCustomizer.prototype.email = function () {
+            return this.fluentRules.email();
+        };
+        /**
+         * Applies the "minLength" STRING validation rule to the property.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRuleCustomizer.prototype.minLength = function (length) {
+            return this.fluentRules.minLength(length);
+        };
+        /**
+         * Applies the "maxLength" STRING validation rule to the property.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRuleCustomizer.prototype.maxLength = function (length) {
+            return this.fluentRules.maxLength(length);
+        };
+        /**
+         * Applies the "minItems" ARRAY validation rule to the property.
+         * null and undefined values are considered valid.
+         */
+        FluentRuleCustomizer.prototype.minItems = function (count) {
+            return this.fluentRules.minItems(count);
+        };
+        /**
+         * Applies the "maxItems" ARRAY validation rule to the property.
+         * null and undefined values are considered valid.
+         */
+        FluentRuleCustomizer.prototype.maxItems = function (count) {
+            return this.fluentRules.maxItems(count);
+        };
+        return FluentRuleCustomizer;
+    }());
+    exports.FluentRuleCustomizer = FluentRuleCustomizer;
+    /**
+     * Part of the fluent rule API. Enables applying rules to properties and objects.
+     */
+    var FluentRules = (function () {
+        function FluentRules(fluentEnsure, parser, property) {
+            this.fluentEnsure = fluentEnsure;
+            this.parser = parser;
+            this.property = property;
+        }
+        /**
+         * Sets the display name of the ensured property.
+         */
+        FluentRules.prototype.displayName = function (name) {
+            this.property.displayName = name;
+            return this;
+        };
+        /**
+         * Applies an ad-hoc rule function to the ensured property or object.
+         * @param condition The function to validate the rule.
+         * Will be called with two arguments, the property value and the object.
+         * Should return a boolean or a Promise that resolves to a boolean.
+         */
+        FluentRules.prototype.satisfies = function (condition, config) {
+            return new FluentRuleCustomizer(this.property, condition, config, this.fluentEnsure, this, this.parser);
+        };
+        /**
+         * Applies a rule by name.
+         * @param name The name of the custom or standard rule.
+         * @param args The rule's arguments.
+         */
+        FluentRules.prototype.satisfiesRule = function (name) {
+            var _this = this;
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            var rule = FluentRules.customRules[name];
+            if (!rule) {
+                // standard rule?
+                rule = this[name];
+                if (rule instanceof Function) {
+                    return rule.call.apply(rule, [this].concat(args));
+                }
+                throw new Error("Rule with name \"" + name + "\" does not exist.");
+            }
+            var config = rule.argsToConfig ? rule.argsToConfig.apply(rule, args) : undefined;
+            return this.satisfies(function (value, obj) { return (_a = rule.condition).call.apply(_a, [_this, value, obj].concat(args)); var _a; }, config)
+                .withMessageKey(name);
+        };
+        /**
+         * Applies the "required" rule to the property.
+         * The value cannot be null, undefined or whitespace.
+         */
+        FluentRules.prototype.required = function () {
+            return this.satisfies(function (value) {
+                return value !== null
+                    && value !== undefined
+                    && !(util_1.isString(value) && !/\S/.test(value));
+            }).withMessageKey('required');
+        };
+        /**
+         * Applies the "matches" rule to the property.
+         * Value must match the specified regular expression.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRules.prototype.matches = function (regex) {
+            return this.satisfies(function (value) { return value === null || value === undefined || value.length === 0 || regex.test(value); })
+                .withMessageKey('matches');
+        };
+        /**
+         * Applies the "email" rule to the property.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRules.prototype.email = function () {
+            return this.matches(/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/)
+                .withMessageKey('email');
+        };
+        /**
+         * Applies the "minLength" STRING validation rule to the property.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRules.prototype.minLength = function (length) {
+            return this.satisfies(function (value) { return value === null || value === undefined || value.length === 0 || value.length >= length; }, { length: length })
+                .withMessageKey('minLength');
+        };
+        /**
+         * Applies the "maxLength" STRING validation rule to the property.
+         * null, undefined and empty-string values are considered valid.
+         */
+        FluentRules.prototype.maxLength = function (length) {
+            return this.satisfies(function (value) { return value === null || value === undefined || value.length === 0 || value.length <= length; }, { length: length })
+                .withMessageKey('maxLength');
+        };
+        /**
+         * Applies the "minItems" ARRAY validation rule to the property.
+         * null and undefined values are considered valid.
+         */
+        FluentRules.prototype.minItems = function (count) {
+            return this.satisfies(function (value) { return value === null || value === undefined || value.length >= count; }, { count: count })
+                .withMessageKey('minItems');
+        };
+        /**
+         * Applies the "maxItems" ARRAY validation rule to the property.
+         * null and undefined values are considered valid.
+         */
+        FluentRules.prototype.maxItems = function (count) {
+            return this.satisfies(function (value) { return value === null || value === undefined || value.length <= count; }, { count: count })
+                .withMessageKey('maxItems');
+        };
+        FluentRules.customRules = {};
+        return FluentRules;
+    }());
+    exports.FluentRules = FluentRules;
+    /**
+     * Part of the fluent rule API. Enables targeting properties and objects with rules.
+     */
+    var FluentEnsure = (function () {
+        function FluentEnsure(parser) {
+            this.parser = parser;
+            /**
+             * Rules that have been defined using the fluent API.
+             */
+            this.rules = [];
+        }
+        /**
+         * Target a property with validation rules.
+         * @param property The property to target. Can be the property name or a property accessor function.
+         */
+        FluentEnsure.prototype.ensure = function (property) {
+            this.assertInitialized();
+            return new FluentRules(this, this.parser, this.parser.parseProperty(property));
+        };
+        /**
+         * Targets an object with validation rules.
+         */
+        FluentEnsure.prototype.ensureObject = function () {
+            this.assertInitialized();
+            return new FluentRules(this, this.parser, { name: null, displayName: null });
+        };
+        /**
+         * Applies the rules to a class or object, making them discoverable by the StandardValidator.
+         * @param target A class or object.
+         */
+        FluentEnsure.prototype.on = function (target) {
+            rules_1.Rules.set(target, this.rules);
+            return this;
+        };
+        FluentEnsure.prototype.assertInitialized = function () {
+            if (this.parser) {
+                return;
+            }
+            throw new Error("Did you forget to add \".plugin('aurelia-validation)\" to your main.js?");
+        };
+        return FluentEnsure;
+    }());
+    exports.FluentEnsure = FluentEnsure;
+    /**
+     * Fluent rule definition API.
+     */
+    var ValidationRules = (function () {
+        function ValidationRules() {
+        }
+        ValidationRules.initialize = function (parser) {
+            ValidationRules.parser = parser;
+        };
+        /**
+         * Target a property with validation rules.
+         * @param property The property to target. Can be the property name or a property accessor function.
+         */
+        ValidationRules.ensure = function (property) {
+            return new FluentEnsure(ValidationRules.parser).ensure(property);
+        };
+        /**
+         * Targets an object with validation rules.
+         */
+        ValidationRules.ensureObject = function () {
+            return new FluentEnsure(ValidationRules.parser).ensureObject();
+        };
+        /**
+         * Defines a custom rule.
+         * @param name The name of the custom rule. Also serves as the message key.
+         * @param condition The rule function.
+         * @param message The message expression
+         * @param argsToConfig A function that maps the rule's arguments to a "config" object that can be used when evaluating the message expression.
+         */
+        ValidationRules.customRule = function (name, condition, message, argsToConfig) {
+            validation_messages_1.validationMessages[name] = message;
+            FluentRules.customRules[name] = { condition: condition, argsToConfig: argsToConfig };
+        };
+        /**
+         * Returns rules with the matching tag.
+         * @param rules The rules to search.
+         * @param tag The tag to search for.
+         */
+        ValidationRules.taggedRules = function (rules, tag) {
+            return rules.filter(function (r) { return r.tag === tag; });
+        };
+        /**
+         * Removes the rules from a class or object.
+         * @param target A class or object.
+         */
+        ValidationRules.off = function (target) {
+            rules_1.Rules.unset(target);
+        };
+        return ValidationRules;
+    }());
+    exports.ValidationRules = ValidationRules;
+});
+
 define('aurelia-dialog/ai-dialog',['exports', 'aurelia-templating'], function (exports, _aureliaTemplating) {
   'use strict';
 
@@ -1792,15 +4237,30 @@ define('aurelia-dialog/dialog-service',['exports', 'aurelia-metadata', 'aurelia-
     return Promise.resolve(instruction);
   }
 });
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <h1>${message}</h1>\n</template>\n"; });
-define('text!home/activity-list.html', ['module'], function(module) { module.exports = "<template bindable=\"activity\">\n  <ul>\n    <li repeat.for=\"a of activity\" class=\"activity\">\n      <!--Note: The activity type isn't the same as the route. What do we do?-->\n      <a route-href=\"route.bind: a.type | activityTypeToRoute; params.bind: { id: a.associatedId }\">\n        <div class=\"well\">\n          <div class=\"avatar\">\n            <img src=\"${a.createdBy.iconUrl}\">\n          </div>\n          <div class=\"body\">\n            <div class=\"title\" innerhtml.bind=\"a.title\"></div> <!-- a.title is formatted as html already so you can bind to innerHtml. This should be santized on the server or in a value converter. --> \n            <div class=\"content\">${a.content}</div>\n            <div class=\"date\">${a.createdAt|date}</div> <!--TODO: Add nicer date format. Could parameterize ${a.createdDate | date:'YYYY'}-->\n          </div>\n        </div>\n      </a>\n    </li>\n  </ul>\n</template>"; });
-define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./activity-list.html\"></require>\n  <require from=\"./news-list.html\"></require>\n  \n  <div>\n    <div class=\"header\">\n      <div class=\"header-left\">Activity</div>\n      <div class=\"header-right\">Benchmarks &amp; News</div>\n    </div>\n\n    <div class=\"sidebar\">\n      <activity-list activity.bind=\"activity\"></activity-list>\n    </div>\n\n    <div class=\"detail-container\">\n      <div class=\"row1x2\">\n        <!--TODO: Add Charts Here-->\n      </div>\n      <div class=\"row2x2\">\n        <news-list news.bind=\"news\"></news-list>\n      </div>\n    </div>\n  </div>\n</template>"; });
-define('text!home/news-list.html', ['module'], function(module) { module.exports = "<template bindable=\"news\" class=\"news\">\n  <template repeat.for=\"n of news\">\n  <!--One of these for each item in the news array.-->\n    <h1>${n.title}</h1>\n    <p>${n.content}</p>\n    <div>\n      <span class=\"badge badge-success\">${n.createdAt | date}</span>\n      <div class=\"pull-right\">\n        <!--One of these for each tag in the news.tags array.-->\n        <span class=\"badge\" repeat.for=\"tag of n.tags\">${tag}</span>\n      </div>\n    </div>\n    <hr>\n  </template>\n</template>\n"; });
-define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"login\">\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 logo\"></div>\n    </div>\n    <div class=\"row\">\n      <div class=\"col-md-4 col-md-offset-4 well\">\n        <div class=\"alert alert-danger\" show.bind=\"message\">${message}</div>\n\n        <form role=\"form\" class=\"form-horizontal\" submit.trigger=\"login()\"><!--Invoke login on form submit.-->\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Username</label>\n            <div class=\"col-sm-10\">\n              <input type=\"text\" class=\"form-control\" placeholder=\"username\" value.bind=\"username\"><!--Bind the username.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Password</label>\n            <div class=\"col-sm-10\">\n              <input type=\"password\" class=\"form-control\" placeholder=\"password\" value.bind=\"password\"><!--Bind the password.-->\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <div class=\"col-sm-offset-2 col-sm-10 text-right\">\n              <!--Disable the button if there isn't both a username and password.-->\n              <button type=\"submit\" class=\"btn btn-success\" disabled.bind=\"!username || !password\">Log In</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</template>\n"; });
-define('text!shell/header.html', ['module'], function(module) { module.exports = "<template>\n  <nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\n    <ul class=\"nav navbar-nav tabs\">\n      <!--TODO: Add Tabs UI-->\n      \n      <!--One li per tab; Apply active class when tab.isActive-->\n      <li repeat.for=\"tab of tabs\" class=\"${tab.isActive ? 'active' : ''}\">\n        <a route-href=\"route.bind: tab.route; params.bind: tab.params\">${tab.title}</a><!--This link should navigate to the tab using tab.route and tab.params.-->\n        <a href=\"#\" click.trigger=\"closeTab(tab)\"><!--This link should invoke closeTab and pass the tab.-->\n          <i class=\"fa fa-times\"></i>\n        </a>\n      </li>\n      \n      <li class=\"dropdown add\">\n        <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">\n          <i class=\"fa fa-plus\"></i>add\n        </a>\n        <ul class=\"dropdown-menu\">\n          <li>\n            <a route-href=\"route: thread; params.bind: { id:'new' }\"><i class=\"icon-ticket\"></i> New Ticket</a>\n          </li>\n          <li>\n            <a route-href=\"route: user; params.bind: { id:'new' }\"><i class=\"icon-group\"></i> New User</a>\n          </li>\n        </ul>\n      </li>\n    </ul>\n\n    <ul class=\"nav navbar-nav navbar-right\">\n      <li class=\"dropdown\">\n        <a href=\"#\" class=\"avatar dropdown-toggle\" data-toggle=\"dropdown\">\n          <img src=\"${user.iconUrl}\" title.bind=\"user.username\">\n          <b class=\"caret\"></b>\n        </a>\n        <ul class=\"dropdown-menu\" role=\"menu\">\n          <li role=\"presentation\">\n            <a route-href=\"route: settings\"><i class=\"fa fa-cog\"></i> Settings</a>\n          </li>\n          <li role=\"presentation\">\n            <a route-href=\"route: help\"><i class=\"fa fa-envelope\"></i> Help</a>\n          </li>\n          <li role=\"presentation\" class=\"divider\"></li>\n          <li role=\"presentation\">\n            <a href=\"#\" click.trigger=\"logout()\"><i class=\"fa fa-power-off\"></i> Logout</a>\n          </li>\n        </ul>\n      </li>\n    </ul>\n  </nav>\n</template>"; });
-define('text!shell/shell.html', ['module'], function(module) { module.exports = "<template>\n  <compose view=\"./header.html\"></compose>\n  <compose view=\"./sidebar.html\"></compose>\n  <div class=\"page-host\">\n    <router-view></router-view>\n  </div>\n</template>\n"; });
-define('text!shell/sidebar.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"main-nav\">\n    <ul class=\"nav nav-list\">\n      <li repeat.for=\"item of router.navigation\" class=\"${item.isActive ? 'active' : ''}\" > <!--One li per item in router.navigation; apply the active class if items.isActive-->\n        <a href.bind=\"item.href\"> <!--Bind the href to item.href-->\n          <i class=\"fa ${item.settings.iconClass}\"></i> <!--Add the icon class based on settings.-->\n        </a>\n      </li>\n    </ul>\n  </div>\n</template>\n"; });
-define('text!tickets/thread.html', ['module'], function(module) { module.exports = "<template>\n  This is a ticket ${ticket.id}.\n</template>\n"; });
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <h1>${message}</h1>\r\n</template>\r\n"; });
+define('text!home/activity-list.html', ['module'], function(module) { module.exports = "<template bindable=\"activity\">\r\n  <ul>\r\n    <li repeat.for=\"a of activity\" class=\"activity\">\r\n      <!--Note: The activity type isn't the same as the route. What do we do?-->\r\n      <a route-href=\"route.bind: a.type | activityTypeToRoute; params.bind: { id: a.associatedId }\">\r\n        <div class=\"well\">\r\n          <div class=\"avatar\">\r\n            <img src=\"${a.createdBy.iconUrl}\">\r\n          </div>\r\n          <div class=\"body\">\r\n            <div class=\"title\" innerhtml.bind=\"a.title\"></div> <!-- a.title is formatted as html already so you can bind to innerHtml. This should be santized on the server or in a value converter. --> \r\n            <div class=\"content\">${a.content}</div>\r\n            <div class=\"date\">${a.createdAt|date}</div> <!--TODO: Add nicer date format. Could parameterize ${a.createdDate | date:'YYYY'}-->\r\n          </div>\r\n        </div>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
+define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./activity-list.html\"></require>\r\n  <require from=\"./news-list.html\"></require>\r\n\r\n  <div>\r\n    <div class=\"header\">\r\n      <div class=\"header-left\">Activity</div>\r\n      <div class=\"header-right\">Benchmarks &amp; News</div>\r\n    </div>\r\n\r\n    <div class=\"sidebar\">\r\n      <activity-list activity.bind=\"activity\"></activity-list>\r\n    </div>\r\n\r\n    <div class=\"detail-container\">\r\n      <div class=\"row1x2\">\r\n        <line-chart class=\"column1x2\" labels.bind=\"['January', 'February', 'March', 'April', 'May', 'June', 'July']\">\r\n          <chart-data data.bind=\"[65, 59, 80, 81, 56, 55, 40]\"></chart-data>\r\n          <chart-data data.bind=\"[28, 48, 40, 19, 86, 27, 90]\" fill-color=\"rgba(230,38,135,0.2)\" stroke-color=\"rgba(230,38,135,0.5)\"\r\n            point-color=\"rgba(230,38,135,1)\" , point-stroke-color=\"#fff\" , point-highlight-fill=\"#fff\" , point-highlight-stroke=\"rgba(230,38,135,1)\"></chart-data>\r\n        </line-chart>\r\n        <bar-chart class=\"column2x2\" labels.bind=\"['January', 'February', 'March', 'April', 'May', 'June', 'July']\">\r\n          <chart-data data.bind=\"[65, 59, 80, 81, 56, 55, 40]\"></chart-data>\r\n          <chart-data data.bind=\"[28, 48, 40, 19, 86, 27, 90]\" fill-color=\"rgba(230,38,135,0.2)\" stroke-color=\"rgba(230,38,135,0.5)\"\r\n            point-color=\"rgba(230,38,135,1)\" , point-stroke-color=\"#fff\" , point-highlight-fill=\"#fff\" , point-highlight-stroke=\"rgba(230,38,135,1)\"></chart-data>\r\n        </bar-chart>\r\n      </div>\r\n      <div class=\"row2x2\">\r\n        <news-list news.bind=\"news\"></news-list>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!home/news-list.html', ['module'], function(module) { module.exports = "<template bindable=\"news\" class=\"news\">\r\n  <template repeat.for=\"n of news\">\r\n  <!--One of these for each item in the news array.-->\r\n    <h1>${n.title}</h1>\r\n    <p>${n.content}</p>\r\n    <div>\r\n      <span class=\"badge badge-success\">${n.createdAt | date}</span>\r\n      <div class=\"pull-right\">\r\n        <!--One of these for each tag in the news.tags array.-->\r\n        <span class=\"badge\" repeat.for=\"tag of n.tags\">${tag}</span>\r\n      </div>\r\n    </div>\r\n    <hr>\r\n  </template>\r\n</template>\r\n"; });
+define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <div class=\"login\">\r\n    <div class=\"row\">\r\n      <div class=\"col-md-4 col-md-offset-4 logo\"></div>\r\n    </div>\r\n    <div class=\"row\">\r\n      <div class=\"col-md-4 col-md-offset-4 well\">\r\n        <div class=\"alert alert-danger\" show.bind=\"message\">${message}</div>\r\n\r\n        <form role=\"form\" class=\"form-horizontal\" submit.trigger=\"login()\"><!--Invoke login on form submit.-->\r\n          <div class=\"form-group\">\r\n            <label class=\"col-sm-2 control-label\">Username</label>\r\n            <div class=\"col-sm-10\">\r\n              <input type=\"text\" class=\"form-control\" placeholder=\"username\" value.bind=\"username\"><!--Bind the username.-->\r\n            </div>\r\n          </div>\r\n          <div class=\"form-group\">\r\n            <label class=\"col-sm-2 control-label\">Password</label>\r\n            <div class=\"col-sm-10\">\r\n              <input type=\"password\" class=\"form-control\" placeholder=\"password\" value.bind=\"password\"><!--Bind the password.-->\r\n            </div>\r\n          </div>\r\n          <div class=\"form-group\">\r\n            <div class=\"col-sm-offset-2 col-sm-10 text-right\">\r\n              <!--Disable the button if there isn't both a username and password.-->\r\n              <button type=\"submit\" class=\"btn btn-success\" disabled.bind=\"!username || !password\">Log In</button>\r\n            </div>\r\n          </div>\r\n        </form>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n"; });
+define('text!settings/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"header-left\">Settings</div>\n    <div class=\"header-right\"></div>\n  </div>\n\n  <div class=\"sidebar\">\n    <ul class=\"nav nav-pills nav-stacked\">\n      <template repeat.for=\"[category, routes] of router.navigation | categories\"> <!--repeating over a map-->\n        <li class=\"nav-header\">\n          <i class=\"fa\" class.bind=\"category.iconClass\"></i>\n          <span>${category.title}</span>\n        </li>\n        \n        <li repeat.for=\"nav of routes\" class=\"${nav.isActive ? 'active' : ''}\"> <!--nested repeater but it produces a flat dom structure.-->\n          <a href.bind=\"nav.href\">${nav.title}</a>\n        </li>\n      </template>\n    </ul>\n  </div>\n\n  <div class=\"detail-container settings-container\">\n    <router-view></router-view>\n  </div>\n</template>"; });
+define('text!shell/header.html', ['module'], function(module) { module.exports = "<template>\r\n  <nav class=\"navbar navbar-default navbar-fixed-top\" role=\"navigation\">\r\n    <ul class=\"nav navbar-nav tabs\">\r\n      <!--TODO: Add Tabs UI-->\r\n      \r\n      <!--One li per tab; Apply active class when tab.isActive-->\r\n      <li repeat.for=\"tab of tabs\" class=\"${tab.isActive ? 'active' : ''}\">\r\n        <a route-href=\"route.bind: tab.route; params.bind: tab.params\">${tab.title}</a><!--This link should navigate to the tab using tab.route and tab.params.-->\r\n        <a href=\"#\" click.trigger=\"closeTab(tab)\"><!--This link should invoke closeTab and pass the tab.-->\r\n          <i class=\"fa fa-times\"></i>\r\n        </a>\r\n      </li>\r\n      \r\n      <li class=\"dropdown add\">\r\n        <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">\r\n          <i class=\"fa fa-plus\"></i>add\r\n        </a>\r\n        <ul class=\"dropdown-menu\">\r\n          <li>\r\n            <a route-href=\"route: thread; params.bind: { id:'new' }\"><i class=\"icon-ticket\"></i> New Ticket</a>\r\n          </li>\r\n          <li>\r\n            <a route-href=\"route: user; params.bind: { id:'new' }\"><i class=\"icon-group\"></i> New User</a>\r\n          </li>\r\n        </ul>\r\n      </li>\r\n    </ul>\r\n\r\n    <ul class=\"nav navbar-nav navbar-right\">\r\n      <li class=\"dropdown\">\r\n        <a href=\"#\" class=\"avatar dropdown-toggle\" data-toggle=\"dropdown\">\r\n          <img src=\"${user.iconUrl}\" title.bind=\"user.username\">\r\n          <b class=\"caret\"></b>\r\n        </a>\r\n        <ul class=\"dropdown-menu\" role=\"menu\">\r\n          <li role=\"presentation\">\r\n            <a route-href=\"route: settings\"><i class=\"fa fa-cog\"></i> Settings</a>\r\n          </li>\r\n          <li role=\"presentation\">\r\n            <a route-href=\"route: help\"><i class=\"fa fa-envelope\"></i> Help</a>\r\n          </li>\r\n          <li role=\"presentation\" class=\"divider\"></li>\r\n          <li role=\"presentation\">\r\n            <a href=\"#\" click.trigger=\"logout()\"><i class=\"fa fa-power-off\"></i> Logout</a>\r\n          </li>\r\n        </ul>\r\n      </li>\r\n    </ul>\r\n  </nav>\r\n</template>"; });
+define('text!shell/shell.html', ['module'], function(module) { module.exports = "<template>\r\n  <compose view=\"./header.html\"></compose>\r\n  <compose view=\"./sidebar.html\"></compose>\r\n  <div class=\"page-host\">\r\n    <router-view></router-view>\r\n  </div>\r\n</template>\r\n"; });
+define('text!shell/sidebar.html', ['module'], function(module) { module.exports = "<template>\r\n  <div class=\"main-nav\">\r\n    <ul class=\"nav nav-list\">\r\n      <li repeat.for=\"item of router.navigation\" class=\"${item.isActive ? 'active' : ''}\" > <!--One li per item in router.navigation; apply the active class if items.isActive-->\r\n        <a href.bind=\"item.href\"> <!--Bind the href to item.href-->\r\n          <i class=\"fa ${item.settings.iconClass}\"></i> <!--Add the icon class based on settings.-->\r\n        </a>\r\n      </li>\r\n    </ul>\r\n  </div>\r\n</template>\r\n"; });
+define('text!tickets/thread.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"ticket\">\n    <div class=\"header\">\n      <div class=\"btn-group\">\n        <a class=\"btn btn-default creator\" route-href=\"route: user; params.bind: { id:ticket.participants[0].id}\" class=\"btn\">\n          <span>${ticket.participants[0].username}</span>\n        </a>\n        <button class=\"btn status active\">\n          <span class=\"badge ${ticket.status}\">${ticket.status}</span>\n        </button>\n      </div>\n    </div>\n\n    <div class=\"sidebar\">\n      <div class=\"well\">\n        <form>\n          <div class=\"form-group\">\n            <label class=\"control-label\">Type</label>\n            <select class=\"form-control\">\n              <option>Question</option>\n              <option>Incident</option>\n              <option>Problem</option>\n              <option>Task</option>\n            </select>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"control-label\">Priority</label>\n            <select class=\"form-control\">\n              <option>Low</option>\n              <option>Normal</option>\n              <option>High</option>\n              <option>Urgent</option>\n            </select>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"control-label\">Tags</label>\n            <input class=\"form-control\" type=\"text\" placeholder=\"tags\" />\n          </div>\n        </form>\n      </div>\n      <div class=\"well\">\n        <form>\n          <div class=\"form-group\">\n            <label class=\"control-label\">Internal Notes</label>\n            <textarea class=\"form-control\"></textarea>\n          </div>\n        </form>\n      </div>\n    </div>\n\n    <div class=\"detail-container\">\n      <div class=\"header\">\n        <i class=\"fa fa-comments\"></i>\n        <div class=\"content\">\n          <div class=\"title\">${ticket.title}</div>\n          <div class=\"description\">\n            <span>${ticket.createdAt | date}</span>\n            <i class=\"fa fa-circle separator\"></i>\n            <span>${from.firstName} ${from.lastName}</span> &lt;\n            <span>${from.email}</span>&gt;\n          </div>\n        </div>\n      </div>\n\n      <div class=\"thread\">\n        <form class=\"message\">\n          <rich-text-editor value.bind=\"message\">\n          </rich-text-editor>\n        </form>\n\n        <div class=\"btn-group dropup pull-right\">\n          <button click.trigger=\"submit('Solved')\" class=\"btn btn-success\">Submit as Solved</button>\n          <button class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\">\n            <span class=\"caret\"></span>\n          </button>\n          <ul class=\"dropdown-menu\">\n            <li>\n              <a href=\"#\" click.trigger=\"submit('Open')\">Submit as Open</a>\n              <a href=\"#\" click.trigger=\"submit('Pending')\">Submit as Pending</a>\n              <a href=\"#\" click.trigger=\"submit('Solved')\">Submit as Solved</a>\n            </li>\n          </ul>\n        </div>\n\n        <div class=\"post-list\">\n          <div repeat.for=\"post of ticket.posts\" class=\"post\">\n            <input type=\"hidden\" model.one-time=\"getParticipant(post.fromId)\" ref=\"participant\"> <!--model is a custom attribute and ref lets you refer to it in other parts of the loop. eg. participant.model.propertyname-->\n            <div class=\"avatar\">\n              <img src=\"${participant.model.avatarUrl}\">\n            </div>\n            <div class=\"body\">\n              <div>\n                <strong>${participant.model.firstName}</strong>\n                <strong>${participant.model.lastName}</strong>\n                <span class=\"createdAt\">${post.createdAt | date}</span>\n              </div>\n              <div>\n                <div>\n                  <p innerhtml.bind=\"post.content\"></p>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</template>\n"; });
+define('text!tickets/tickets.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"header-single\">Tickets</div>\n  </div>\n\n  <data-grid items.bind=\"tickets\">\n    <grid-column heading=\"Title\">\n      <a route-href=\"route: thread; params.bind: { id:item.id }\">${item.title}</a>\n    </grid-column>\n    <grid-column heading=\"Submitted By\">\n      ${item.participants[0].firstName} ${item.participants[0].lastName}\n    </grid-column>\n    <grid-column heading=\"Submitted On\">\n      ${item.createdAt | date}\n    </grid-column>\n    <grid-column heading=\"Type\" property=\"type\"></grid-column>\n    <grid-column heading=\"Status\" property=\"status\"></grid-column>\n    <grid-column heading=\"Priority\" property=\"priority\"></grid-column>\n  </data-grid>\n</template>"; });
+define('text!users/user-detail.html', ['module'], function(module) { module.exports = "<template class=\"user-detail\" bindable=\"controller\"> \n\n  <require from=\"resources/data/countries\"></require>\n  <require from=\"resources/data/timezones\"></require>\n\n  <div with.bind=\"controller.editable\" class=\"header\">\n    <div>\n      <div class=\"avatar\">\n        <img src=\"${avatarUrl}\">\n      </div>\n      <div class=\"content\">\n        <div>\n          <span class=\"title\">${fullName}</span>\n        </div>\n        <div>${email}</div>\n      </div>\n      <div class=\"text-right user-errors\" if.bind=\"!controller.isValid\">\n        <span class=\"label label-danger sandbox-invalid\">User Has Errors</span>\n      </div>\n    </div>\n  </div>\n\n  <div with.bind=\"controller.editable\" class=\"body\">\n    <ul class=\"nav nav-tabs\">\n      <li class=\"active\">\n        <a href=\"#home\" data-toggle=\"tab\">Profile</a>\n      </li>\n      <li>\n        <a href=\"#address\" data-toggle=\"tab\">Address</a>\n      </li>\n      <li>\n        <a href=\"#profile\" data-toggle=\"tab\">Account</a>\n      </li>\n      <li class=\"pull-right\">\n        <button class=\"btn ${isActive ? 'btn-danger' : 'btn-info'}\" \n                click.trigger=\"controller.toggleActiveStatus()\">\n          ${isActive ? 'Deactivate' : 'Activate'}\n        </button>\n        <button class=\"btn btn-warning\"\n                click.trigger=\"controller.revert()\"\n                disabled.bind=\"!controller.isDirty\">Revert</button>\n        <button class=\"btn btn-success\"\n                click.trigger=\"controller.save()\"\n                disabled.bind=\"!controller.isDirty || !controller.isValid\">Save</button>\n      </li>\n    </ul>\n\n    <div with.bind=\"controller.editable\" class=\"tab-content\">\n      <div class=\"tab-pane active in\" id=\"home\">\n        <form role=\"form\" class=\"form-horizontal\">\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">First Name</label>\n            <div class=\"col-sm-3\">\n              <input value.bind=\"firstName & validate\" type=\"text\" placeholder=\"first name\" class=\"form-control\">\n            </div>\n          </div>\n\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Last Name</label>\n            <div class=\"col-sm-3\">\n              <input value.bind=\"lastName & validate\" type=\"text\" placeholder=\"last name\" class=\"form-control\">\n            </div>\n          </div>\n\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Email</label>\n            <div class=\"col-sm-3\">\n              <input value.bind=\"email & validate\" type=\"text\" placeholder=\"email\" class=\"form-control\">\n            </div>\n          </div>\n\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Time Zone</label>\n            <div class=\"col-sm-3\">\n              <select class=\"form-control\">\n                <option repeat.for=\"zone of timezones\" value.bind=\"zone.value\">${zone.display}</option>\n              </select>\n            </div>\n          </div>\n\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">About</label>\n            <div class=\"col-sm-3\">\n              <textarea rows=\"3\" class=\"form-control\" placeholder=\"about\"></textarea>\n            </div>\n          </div>\n        </form>\n      </div>\n\n      <div class=\"tab-pane fade\" id=\"address\">\n        <form role=\"form\" class=\"form-horizontal\">\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Address Line 1</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" placeholder=\"address line 1\" class=\"form-control\">\n              <p class=\"help-block\">Street address, P.O. box, company name, c/o</p>\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Address Line 2</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" placeholder=\"address line 2\" class=\"form-control\">\n              <p class=\"help-block\">Apartment, suite , unit, building, floor, etc.</p>\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">City / Town</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" placeholder=\"city\" class=\"form-control\">\n              <p class=\"help-block\"></p>\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">State / Province / Region</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" placeholder=\"state / province / region\" class=\"form-control\">\n              <p class=\"help-block\"></p>\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Zip / Postal Code</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" placeholder=\"zip or postal code\" class=\"form-control\">\n              <p class=\"help-block\"></p>\n            </div>\n          </div>\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Country</label>\n            <div class=\"col-sm-3\">\n              <select class=\"form-control\">\n                <option value=\"\" selected=\"selected\">(please select a country)</option>\n                <option repeat.for=\"country of countries\" value.bind=\"country.abbreviation\">${country.name}</option>\n              </select>\n            </div>\n          </div>\n        </form>\n      </div>\n\n      <div class=\"tab-pane fade\" id=\"profile\">\n        <form role=\"form\" class=\"form-horizontal\">\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Username</label>\n            <div class=\"col-sm-3\">\n              <p class=\"form-control-static\">${controller.editable.username}</p>\n            </div>\n          </div>\n\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Password</label>\n            <div class=\"col-sm-3\">\n              <input type=\"password\" class=\"form-control\">\n            </div>\n          </div>\n\n          <div class=\"form-group\">\n            <label class=\"col-sm-2 control-label\">Confirm Password</label>\n            <div class=\"col-sm-3\">\n              <input type=\"password\" class=\"form-control\">\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</template>\n"; });
+define('text!users/users.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./user-detail.html\"></require>\n  \n  <div>\n    <div class=\"header\">\n      <div class=\"header-left\">Users</div>\n    </div>\n\n    <div class=\"sidebar\">\n      <ul repeat.for=\"user of users\">\n        <li class=\"customer ${activeId === user.id ? 'active' : ''}\">\n          <a route-href=\"route: user; params.bind: { id: user.id }\">\n            <div class=\"well\">\n              <div>\n                <div class=\"avatar\">\n                  <img src=\"${user.avatarUrl}\">\n                </div>\n                <div class=\"body\">\n                  <p>\n                    <strong>${user.fullName}</strong>\n                  </p>\n                  <span class=\"badge badge-error\">${user.ticketCount & oneTime} tickets</span>\n                  <span class=\"badge badge-success\">${user.postCount & oneTime} posts</span>\n                </div>\n              </div>\n            </div>\n          </a>\n        </li>\n      </ul>\n    </div>\n\n    <div class=\"detail-container\" if.bind=\"controller.editable\">\n      <user-detail controller.bind=\"controller\"></user-detail>\n    </div>\n    \n    <div class=\"detail-container\" if.bind=\"!controller.editable\">\n      <h2 class=\"select-from-list\">Please select a user from the list.</h2>\n    </div>\n  </div>\n</template>\n"; });
 define('text!resources/dialogs/message-box.html', ['module'], function(module) { module.exports = "<template>\n  <ai-dialog style=\"max-width: 325px\">\n    <ai-dialog-header>${model.title}</ai-dialog-header>\n\n    <ai-dialog-body>\n      ${model.message}\n    </ai-dialog-body>\n\n    <ai-dialog-footer>\n      <button repeat.for=\"option of model.options\" click.trigger=\"selectOption(option)\">${option}</button>\n    </ai-dialog-footer>\n  </ai-dialog>\n</template>"; });
-define('text!resources/dialogs/prompt.html', ['module'], function(module) { module.exports = "<template>\n  <ai-dialog>\n    <ai-dialog-header>${model.title}</ai-dialog-header>\n\n    <ai-dialog-body>\n      <p>${model.message}</p>\n      <form submit.trigger=\"ok()\"> <!--On submit, ok the dialog w/ the answer response.-->\n        <input type=\"text\" class=\"form-control\" attach-focus=\"true\" value.bind=\"answer\" attach-focus=\"true\"> <!--Bind the answer.-->\n      </form>\n    </ai-dialog-body>\n\n    <ai-dialog-footer>\n      <button click.trigger=\"cancel()\">Cancel</button><!--Cancel the dialog.-->\n      <button click.trigger=\"ok()\" disabled.bind=\"!answer\">Ok</button>!<!--Ok the dialog w/ answer response; Disable the button if there's no answer.-->\n    </ai-dialog-footer>\n  </ai-dialog>\n</template>"; });
+define('text!resources/dialogs/prompt.html', ['module'], function(module) { module.exports = "<template>\n  <ai-dialog>\n    <ai-dialog-header>${model.title}</ai-dialog-header>\n\n    <ai-dialog-body>\n      <p>${model.message}</p>\n      <form submit.trigger=\"ok()\">\n        <input type=\"text\" class=\"form-control\" value.bind=\"answer\" attach-focus=\"true\">\n      </form>\n    </ai-dialog-body>\n\n    <ai-dialog-footer>\n      <button click.trigger=\"cancel()\">Cancel</button>\n      <button click.trigger=\"ok()\" disabled.bind=\"!answer\">Ok</button>\n    </ai-dialog-footer>\n  </ai-dialog>\n</template>\n"; });
+define('text!resources/elements/data-grid.html', ['module'], function(module) { module.exports = "<template>\n  <slot></slot>\n</template>\n"; });
+define('text!settings/account/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/api/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/email/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/feedbacktab/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/facebook/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/overview/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/security/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/twitter/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/subscription/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!settings/webportal/index.html', ['module'], function(module) { module.exports = "<template>\n  <div class=\"header\">\n    <div class=\"content\">\n      <div class=\"title\">${heading}</div>\n    </div>\n  </div>\n  <div class=\"grid-container container-fluid\">\n    <div class=\"row-fluid\">\n      <div class=\"alert alert-danger text-center\">\n        <span>${heading} Settings Not Implemented</span>\n      </div>\n    </div>\n  </div>\n</template>"; });
 //# sourceMappingURL=app-bundle.js.map
